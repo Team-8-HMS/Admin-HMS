@@ -1,17 +1,21 @@
-//
-//  DEMO_APPApp.swift
-//  DEMO APP
-//
-//  Created by Aman Prakash on 03/07/24.
-//
 
 import SwiftUI
-
+import Firebase
 @main
-struct DEMO_APPApp: App {
+struct YourApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            LoginMain()
         }
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        return true
     }
 }
