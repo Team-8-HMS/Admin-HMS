@@ -64,6 +64,8 @@ struct RequestView: View {
                         ForEach(filteredRequests) { request in
                             RequestBoxView(request: request, approveAction: {
                                 approveRequest(request)
+                            }, disapproveAction: {
+                                disapproveRequest(request)
                             })
                         }
                     }
@@ -89,11 +91,18 @@ struct RequestView: View {
             approvedDoctors.append(approvedRequest)
         }
     }
+
+    private func disapproveRequest(_ request: Request) {
+        if let index = requests.firstIndex(where: { $0.id == request.id }) {
+            requests.remove(at: index)
+        }
+    }
 }
 
 struct RequestBoxView: View {
     var request: Request
     var approveAction: () -> Void
+    var disapproveAction: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -119,16 +128,14 @@ struct RequestBoxView: View {
             HStack {
                 Spacer()
                 Button(action: approveAction) {
-                    Text("Yes")
+                    Text("Approve")
                         .foregroundColor(.white)
                         .frame(width: 100, height: 40)
-                        .background(Color.blue)
+                        .background(Color.green)
                         .cornerRadius(10)
                 }
-                Button(action: {
-                    // Disapprove action
-                }) {
-                    Text("No")
+                Button(action: disapproveAction) {
+                    Text("Reject")
                         .foregroundColor(.white)
                         .frame(width: 100, height: 40)
                         .background(Color.red)

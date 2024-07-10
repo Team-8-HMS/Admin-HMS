@@ -17,23 +17,23 @@ struct ForgotPasswordView: View {
                     .resizable()
                     .scaledToFit()
                     .edgesIgnoringSafeArea(.all)
+                Color(hex: "#EFBAB1")
+                                   .opacity(0.3)
+                                   .edgesIgnoringSafeArea(.all)
                 
                 ZStack {
-                    Image("card")
-                        .resizable()
-                        .scaledToFit()
-                        .cornerRadius(20)
-                        .shadow(radius: 10)
-                        .frame(width: 800, height: 800)
+                    
                     
                     VStack {
-                        Spacer()
-                        
-                        // Header text
+                       
                         Text("Forgot your password?")
-                            .font(.largeTitle)
-                            .foregroundColor(.black)
-                            .padding(.bottom, 10)
+                                                       // .font(.largeTitle.bold())
+                        .font(.system(size: 50, weight: .bold))
+                        .foregroundColor(Color(red: 255/255, green: 101/255, blue: 74/255))
+                        .padding(.top,250)
+                        .padding(.trailing,40)
+                        
+
                         
                         // Email TextField
                         TextField("Email", text: $email)
@@ -45,15 +45,15 @@ struct ForgotPasswordView: View {
                             .keyboardType(.emailAddress)
                             .disableAutocorrection(true)
                             .foregroundColor(.black)
-                            .frame(width: 750)
+                            .frame(width: 600)
                         
                         // Reset Password button
                         Button(action: sendMail) {
                             Text("Reset Your Password")
                                 .foregroundColor(.white)
                                 .padding()
-                                .frame(width: 700)
-                                .background(Color.blue)
+                                .frame(width: 350)
+                                .background(Color.black)
                                 .cornerRadius(10)
                                 .padding(.horizontal, 20)
                                 .padding(.top, 60)

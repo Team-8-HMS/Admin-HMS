@@ -28,10 +28,85 @@ struct Patient: Identifiable {
 
 
 
-
 //-------------------------------------------------------
 // *************   Doctor Data Model *********************
+struct Doctor: Identifiable, Codable, Equatable {
+    var id: String
+    var idNumber: Int
+    var name: String
+    var contactNo: String
+    var email: String
+    var address: String
+    var gender: String
+    var dob: Date
+    var degree: String
+    var department: String
+    var status: Bool
+    var entryTime: Date
+    var exitTime: Date
+    var visitingFees: Int
+    var imageURL: URL?
+    var workingDays: [String]
+    var yearsOfExperience: Int
+    
+    init(id: String, idNumber: Int, name: String, contactNo: String, email: String, address: String, gender: String, dob: Date, degree: String, department: String, status: Bool, entryTime: Date, exitTime: Date, visitingFees: Int, imageURL: URL?, workingDays: [String], yearsOfExperience: Int) {
+        self.id = id
+        self.idNumber = idNumber
+        self.name = name
+        self.contactNo = contactNo
+        self.email = email
+        self.address = address
+        self.gender = gender
+        self.dob = dob
+        self.degree = degree
+        self.department = department
+        self.status = status
+        self.entryTime = entryTime
+        self.exitTime = exitTime
+        self.visitingFees = visitingFees
+        self.imageURL = imageURL
+        self.workingDays = workingDays
+        self.yearsOfExperience = yearsOfExperience
+    }
+    
+    func toDictionary() -> [String: Any] {
+        var dict: [String: Any] = [
+            "id": id,
+            "idNumber": idNumber,
+            "name": name,
+            "contactNo": contactNo,
+            "email": email,
+            "address": address,
+            "gender": gender,
+            "dob": dob,
+            "degree": degree,
+            "department": department,
+            "status": status,
+            "entryTime": entryTime,
+            "exitTime": exitTime,
+            "visitingFees": visitingFees,
+            "workingDays": workingDays,
+            "yearsOfExperience": yearsOfExperience
+        ]
+        
+        if let imageURL = imageURL {
+            dict["imageURL"] = imageURL.absoluteString
+        }
+        
+        return dict
+    }
+    
+    var age: Int {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: dob, to: Date())
+        return ageComponents.year ?? 0
+    }
+}
 
+
+
+//-------------------------------------------------------
+// *************   Doctor Data Model Ends *********************
 
 
 enum Departments : String {

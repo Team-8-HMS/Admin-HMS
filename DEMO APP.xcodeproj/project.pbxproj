@@ -12,6 +12,12 @@
 		258AF4652C370544005E3A46 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 258AF4642C370544005E3A46 /* FirebaseFirestoreSwift */; };
 		258AF4672C370544005E3A46 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 258AF4662C370544005E3A46 /* FirebaseStorage */; };
 		25AE03862C37EDC800B80DD1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 25AE03852C37EDC800B80DD1 /* GoogleService-Info.plist */; };
+		B70C10422C3EE16F00042FDC /* DoctorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10412C3EE16F00042FDC /* DoctorDetailView.swift */; };
+		B70C10442C3EE18700042FDC /* DoctorCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10432C3EE18700042FDC /* DoctorCardView.swift */; };
+		B70C10462C3EE19F00042FDC /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10452C3EE19F00042FDC /* Extensions.swift */; };
+		B70C10482C3EE1B500042FDC /* AddDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10472C3EE1B500042FDC /* AddDoctorView.swift */; };
+		B70C104A2C3EE22A00042FDC /* EditDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10492C3EE22A00042FDC /* EditDoctorView.swift */; };
+		B70C104C2C3EE24C00042FDC /* MultiSelectPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */; };
 		B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E072C3BA15A007CF707 /* Data Model.swift */; };
 		B78F4E0B2C3BA927007CF707 /* DoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0A2C3BA927007CF707 /* DoctorView.swift */; };
 		B78F4E0D2C3BDAB7007CF707 /* Data Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */; };
@@ -53,6 +59,12 @@
 
 /* Begin PBXFileReference section */
 		25AE03852C37EDC800B80DD1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B70C10412C3EE16F00042FDC /* DoctorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorDetailView.swift; sourceTree = "<group>"; };
+		B70C10432C3EE18700042FDC /* DoctorCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorCardView.swift; sourceTree = "<group>"; };
+		B70C10452C3EE19F00042FDC /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		B70C10472C3EE1B500042FDC /* AddDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDoctorView.swift; sourceTree = "<group>"; };
+		B70C10492C3EE22A00042FDC /* EditDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditDoctorView.swift; sourceTree = "<group>"; };
+		B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSelectPicker.swift; sourceTree = "<group>"; };
 		B78F4E072C3BA15A007CF707 /* Data Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Model.swift"; sourceTree = "<group>"; };
 		B78F4E0A2C3BA927007CF707 /* DoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorView.swift; sourceTree = "<group>"; };
 		B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Controller.swift"; sourceTree = "<group>"; };
@@ -120,6 +132,12 @@
 			isa = PBXGroup;
 			children = (
 				B78F4E0A2C3BA927007CF707 /* DoctorView.swift */,
+				B70C10412C3EE16F00042FDC /* DoctorDetailView.swift */,
+				B70C10432C3EE18700042FDC /* DoctorCardView.swift */,
+				B70C10492C3EE22A00042FDC /* EditDoctorView.swift */,
+				B70C10452C3EE19F00042FDC /* Extensions.swift */,
+				B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */,
+				B70C10472C3EE1B500042FDC /* AddDoctorView.swift */,
 			);
 			path = Doctor;
 			sourceTree = "<group>";
@@ -349,21 +367,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				B78F4E182C3BDB69007CF707 /* RequestView.swift in Sources */,
+				B70C10482C3EE1B500042FDC /* AddDoctorView.swift in Sources */,
 				DBCA397E2C351E3400804928 /* ContentView.swift in Sources */,
+				B70C104A2C3EE22A00042FDC /* EditDoctorView.swift in Sources */,
 				B78F4E162C3BDB57007CF707 /* AppointmentView.swift in Sources */,
 				B78F4E262C3BECD8007CF707 /* AddPricing.swift in Sources */,
 				B78F4E0B2C3BA927007CF707 /* DoctorView.swift in Sources */,
 				B78F4E0D2C3BDAB7007CF707 /* Data Controller.swift in Sources */,
 				B78F4E142C3BDB3F007CF707 /* PricingView.swift in Sources */,
+				B70C10462C3EE19F00042FDC /* Extensions.swift in Sources */,
 				B78F4E122C3BDB2A007CF707 /* RevenueView.swift in Sources */,
 				B78F4E222C3BE2DE007CF707 /* forgotPassword.swift in Sources */,
 				B78F4E1C2C3BDBC0007CF707 /* OverviewView.swift in Sources */,
+				B70C10422C3EE16F00042FDC /* DoctorDetailView.swift in Sources */,
 				DBCA397C2C351E3400804928 /* DEMO_APPApp.swift in Sources */,
 				B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */,
 				B78F4E202C3BE266007CF707 /* LoginMain.swift in Sources */,
 				B78F4E1A2C3BDBAF007CF707 /* ProfileView.swift in Sources */,
 				B78F4E282C3BECF5007CF707 /* EditPricing.swift in Sources */,
 				B78F4E102C3BDB07007CF707 /* Patient.swift in Sources */,
+				B70C10442C3EE18700042FDC /* DoctorCardView.swift in Sources */,
+				B70C104C2C3EE24C00042FDC /* MultiSelectPicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
