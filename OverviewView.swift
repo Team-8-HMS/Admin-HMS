@@ -1,95 +1,101 @@
 import SwiftUI
 import Charts
 
-
 struct OverviewView: View {
     @State private var selectedSegment = "Yearly"
     private let segments = ["Weekly", "Monthly", "Yearly"]
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Overview Section
-            HStack {
-                Text("Overview")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.leading, 16)
-                Spacer()
-            }
-            .padding(.top, 16)
-            
-            HStack(spacing: 16) {
-                OverviewBox(title: "Today Visitors", value: "10", image: "person.3")
-                OverviewBox(title: "Doctors", value: "1", image: "stethoscope")
-                OverviewBox(title: "Patients", value: "10", image: "person")
-            }
-            .padding(.horizontal, 16)
-            
-            HStack(spacing: 16) {
-                OverviewBox(title: "Patient Appointment", value: "0 Weekly", image: "calendar.badge.plus")
-                OverviewBox(title: "Departments", value: "10", image: "building.columns")
-                OverviewBox(title: "Today's Revenue", value: "10,000", image: "creditcard")
-            }
-            .padding(.horizontal, 16)
-            
-            // Chart Section
-            HStack(spacing: 16) {
-                VStack {
-                    Picker("Select", selection: $selectedSegment) {
-                        ForEach(segments, id: \.self) { segment in
-                            Text(segment)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    
-                    LineChart(data: getData(for: selectedSegment), labels: getLabels(for: selectedSegment))
-                        .frame(height: 300)
-                        .padding()
-                }
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .shadow(radius: 5)
-                )
-                
-                VStack {
-                    Text("Department - wise Revenue")
-                        .font(.title2)
+        GeometryReader { geometry in
+            VStack(spacing: 16) {
+                // Overview Section
+                HStack {
+                    Text("Overview")
+                        .font(.largeTitle)
                         .bold()
-                        .padding(.top)
-                    
-                    DonutChartView(segments: [
-                        (color: Color.orange, value: 41.0),
-                        (color: Color.blue, value: 12.0),
-                        (color: Color.gray, value: 13.0),
-                        (color: Color.red, value: 34.0)
-                    ])
-                    .frame(width: 200, height: 200)
-                    .padding(30)
-
-                    HStack(spacing: 20) {
-                        Legend(color: .orange, text: "Cardiology")
-                        Legend(color: .gray, text: "Neurology")
-                        Legend(color: .red, text: "Eye")
-                        Legend(color: .blue, text: "Dental")
-                    }
-                    .padding()
-                    
+                        .padding(.leading, 16)
                     Spacer()
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .shadow(radius: 5)
-                )
-                .frame(width: 300, height: 300)
+                .padding(.top, 16)
+                
+                VStack(spacing: 16) {
+                    HStack(spacing: 16) {
+                        OverviewBox(title: "Today Visitors", value: "10", image: "person.3")
+                        OverviewBox(title: "Doctors", value: "1", image: "stethoscope")
+                        OverviewBox(title: "Patients", value: "10", image: "person")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    
+                    HStack(spacing: 16) {
+                        OverviewBox(title: "Patient Appointment", value: "0 Weekly", image: "calendar.badge.plus")
+                        OverviewBox(title: "Departments", value: "10", image: "building.columns")
+                        OverviewBox(title: "Today's Revenue", value: "10,000", image: "creditcard")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                }
+
+                // Chart Section
+                HStack(spacing: 16) {
+                    VStack {
+                        Picker("Select", selection: $selectedSegment) {
+                            ForEach(segments, id: \.self) { segment in
+                                Text(segment)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding()
+                        
+                        LineChart(data: getData(for: selectedSegment), labels: getLabels(for: selectedSegment))
+                            .frame(height: geometry.size.height * 0.4)
+                            .padding()
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white)
+                            .shadow(radius: 5)
+                    )
+                    
+                    VStack {
+                        Text("Department - wise Revenue")
+                            .font(.title2)
+                            .bold()
+                            .padding(.top)
+                        
+                        DonutChartView(segments: [
+                            (color: Color.orange, value: 41.0),
+                            (color: Color.blue, value: 12.0),
+                            (color: Color.gray, value: 13.0),
+                            (color: Color.red, value: 34.0)
+                        ])
+                        .frame(width: geometry.size.width * 0.25, height: geometry.size.width * 0.25)
+                        .padding(30)
+
+                        HStack(spacing: 20) {
+                            Legend(color: .orange, text: "Cardiology")
+                            Legend(color: .gray, text: "Neurology")
+                            Legend(color: .red, text: "Eye")
+                            Legend(color: .blue, text: "Dental")
+                        }
+                        .padding()
+                        
+                        Spacer()
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white)
+                            .shadow(radius: 5)
+                    )
+                    .frame(width: geometry.size.width * 0.3, height: geometry.size.height * 0.5)
+                }
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
-        }
-        .padding()
-        .background(Color(hex: "#EFBAB1").opacity(0.3))
-        .edgesIgnoringSafeArea(.all)
+            .padding()
+            .frame(width: geometry.size.width, height: geometry.size.height)
+           
+        } .background(Color(hex: "#EFBAB1").opacity(0.3))
+            .edgesIgnoringSafeArea(.all)
     }
     
     func getData(for segment: String) -> [Double] {
@@ -264,4 +270,8 @@ struct Legend: View {
                 .foregroundColor(color)
         }
     }
+}
+
+#Preview {
+    OverviewView()
 }

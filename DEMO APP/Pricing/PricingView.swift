@@ -8,6 +8,8 @@
 import SwiftUI
 import FirebaseFirestore
 
+
+
 struct MedicalTest: Identifiable, Hashable {
     var id = UUID()
     var name: String
@@ -28,48 +30,52 @@ struct PricingView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    Text("Lab-Test")
+                    Text("Test Fee")
                         .font(.largeTitle)
                         .bold()
-                        .foregroundColor(.black) // Set text color to black
                     Spacer()
                     Button(action: {
                         showAddTestView = true
                     }) {
                         Text("+ Add Test")
                             .padding()
-                            .background(Color.orange)
+                            .background(Color.CustomRed)
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
                 }
                 .padding()
                 
-                TextField("Search", text: $searchText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-
-                VStack(alignment: .leading) {
+                HStack {
+                    TextField("Search", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(width: UIScreen.main.bounds.width / 2)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    // Heading row
                     HStack {
                         Text("Serial Number")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .foregroundColor(.black) // Set text color to black
                         Text("Test")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .foregroundColor(.black) // Set text color to black
                         Text("Price")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .foregroundColor(.black) // Set text color to black
                         Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                     .background(Color.gray.opacity(0.2))
                     
+                    Divider()
+                    
+                    // Test rows
                     List {
                         ForEach(Array(filteredTests.enumerated()), id: \.element.id) { index, test in
                             Button(action: {
@@ -78,13 +84,10 @@ struct PricingView: View {
                                 HStack {
                                     Text("\(index + 1)")
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                        .foregroundColor(.black) // Set text color to black
                                     Text(test.name)
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                        .foregroundColor(.black) // Set text color to black
                                     Text("\(test.price, specifier: "%.2f")")
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                        .foregroundColor(.black) // Set text color to black
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                 }
@@ -92,10 +95,13 @@ struct PricingView: View {
                             }
                         }
                     }
-                    .background(Color(hex: "#EFBAB1").opacity(0.3)) // Add background color to the table view
+                    .listStyle(PlainListStyle())
                 }
-            }
-            .background(Color(hex: "#EFBAB1").opacity(0.3)) // Add background color here
+                .background(Color(hex: "#EFBAB1").opacity(0.3))
+                .cornerRadius(10)
+                .shadow(radius: 5)
+                .padding()
+            } .background(Color(hex: "#EFBAB1").opacity(0.3))
             .sheet(isPresented: $showAddTestView) {
                 AddTestView(onSave: fetchData)
             }
@@ -133,18 +139,8 @@ struct PricingView: View {
         }
     }
 }
-
-// Extension to initialize Color from hex value
-//extension Color {
-//    init(hex: String) {
-//        let scanner = Scanner(string: hex)
-//        scanner.currentIndex = hex.startIndex
-//        var rgbValue: UInt64 = 0
-//        scanner.scanHexInt64(&rgbValue)
-//        let r = Double((rgbValue & 0xff0000) >> 16) / 255.0
-//        let g = Double((rgbValue & 0x00ff00) >> 8) / 255.0
-//        let b = Double(rgbValue & 0x0000ff) / 255.0
-//        self.init(red: r, green: g, blue: b)
-//    }
-//}
-
+extension Color {
+   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)}
+#Preview {
+    PatientView()
+}

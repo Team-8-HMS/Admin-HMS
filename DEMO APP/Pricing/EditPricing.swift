@@ -27,17 +27,17 @@ struct EditTestView: View {
             VStack {
                 Form {
                     TextField("Test Name", text: $name)
-                    TextField("Price", value: $price, formatter: NumberFormatter())
+                    TextField("Fee", value: $price, formatter: NumberFormatter())
                         .keyboardType(.decimalPad)
+                    
+                    Button("Remove Test", role: .destructive) {
+                        removeTest()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
                 }
                 
                 Spacer()
-                
-                Button("Remove Test", role: .destructive) {
-                    removeTest()
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
             }
             .navigationTitle("Edit Test")
             .toolbar {

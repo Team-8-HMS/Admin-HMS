@@ -10,29 +10,9 @@ struct LoginMain: View {
     @State private var alertMessage = ""
     
     // Password validation checks
-    private var isPasswordLengthValid: Bool {
-        return password.count >= 8
-    }
+   
+   
     
-    private var containsUppercase: Bool {
-        let uppercase = CharacterSet.uppercaseLetters
-        return password.rangeOfCharacter(from: uppercase) != nil
-    }
-    
-    private var containsLowercase: Bool {
-        let lowercase = CharacterSet.lowercaseLetters
-        return password.rangeOfCharacter(from: lowercase) != nil
-    }
-    
-    private var containsNumber: Bool {
-        let numbers = CharacterSet.decimalDigits
-        return password.rangeOfCharacter(from: numbers) != nil
-    }
-    
-    private var containsSpecialCharacter: Bool {
-        let specialCharacters = CharacterSet.punctuationCharacters
-        return password.rangeOfCharacter(from: specialCharacters) != nil
-    }
     
     var body: some View {
         NavigationStack {
@@ -42,17 +22,20 @@ struct LoginMain: View {
                     .resizable()
                     .scaledToFit()
                     .edgesIgnoringSafeArea(.all)
+                Color(hex: "#EFBAB1")
+                                   .opacity(0.3)
+                                   .edgesIgnoringSafeArea(.all)
                 ZStack {
-                    Image("card")
-                        .resizable()
-                        .scaledToFit()
-                        .cornerRadius(20)
-                        .shadow(radius: 10)
-                        .frame(width: 800, height: 800)
+
                     
                     // Foreground content
                     VStack {
-                        Spacer()
+                        Text("Welcome!")
+                                                       // .font(.largeTitle.bold())
+                        .font(.system(size: 50, weight: .bold))
+                        .foregroundColor(Color(red: 255/255, green: 101/255, blue: 74/255))
+                        .padding(.top,250)
+                        .padding(.trailing,0)
                         
                         // Email TextField
                         TextField("Email", text: $email)
@@ -64,7 +47,8 @@ struct LoginMain: View {
                             .keyboardType(.emailAddress)
                             .disableAutocorrection(true)
                             .foregroundColor(.black)
-                            .frame(width: 750) // Explicitly set text color
+                            .frame(width: 500) // Explicitly set text color
+
                             .overlay(
                                 HStack {
                                     Spacer()
@@ -98,7 +82,8 @@ struct LoginMain: View {
                             .padding(.horizontal, 20)
                             .disableAutocorrection(true)
                             .foregroundColor(.black)
-                            .frame(width: 750) // Explicitly set text color
+                            .frame(width: 500)
+
                         
                         // Password validation checks
                         
@@ -127,8 +112,8 @@ struct LoginMain: View {
                             Text("Login")
                                 .foregroundColor(.white)
                                 .padding()
-                                .frame(width: 750)
-                                .background(Color.blue)
+                                .frame(width: 350)
+                                .background(Color.black)
                                 .cornerRadius(10)
                                 .padding(.horizontal, 20)
                         }
