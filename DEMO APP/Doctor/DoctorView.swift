@@ -146,6 +146,7 @@ struct DoctorView: View {
                 print("Error deleting doctor: \(error.localizedDescription)")
             } else {
                 print("Doctor deleted successfully")
+                Auth.auth().currentUser?.delete()
                 if let imageURL = doctor.imageURL {
                     let storageRef = Storage.storage().reference(forURL: imageURL.absoluteString)
                     storageRef.delete { error in

@@ -4,8 +4,9 @@ import Charts
 struct OverviewView: View {
     @State private var selectedSegment = "Yearly"
     private let segments = ["Weekly", "Monthly", "Yearly"]
-    
+   
     var body: some View {
+        
         GeometryReader { geometry in
             VStack(spacing: 16) {
                 // Overview Section

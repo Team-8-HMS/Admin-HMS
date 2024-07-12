@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+
 class DataController{
     
     static let shared = DataController() // Singleton instance

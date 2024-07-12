@@ -148,6 +148,7 @@ struct LoginMain: View {
                 showAlert = true
             } else {
                 print("Else")
+                fetchAppointments()
                 loginButtonTapped = true
             }
         }
