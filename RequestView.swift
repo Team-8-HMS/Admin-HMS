@@ -1,40 +1,55 @@
-//
-//  RequestView.swift
-//  HMS_admin_Demo_02
-//
-//  Created by Sameer Verma on 04/07/24.
-//
-
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 // Extension to use hex color values
-
+//extension Color {
+//    init(hex: String) {
+//        let scanner = Scanner(string: hex)
+//        scanner.scanLocation = 0
+//        var rgbValue: UInt64 = 0
+//        scanner.scanHexInt64(&rgbValue)
+//        let r = (rgbValue & 0xff0000) >> 16
+//        let g = (rgbValue & 0xff00) >> 8
+//        let b = rgbValue & 0xff
+//        self.init(
+//            .sRGB,
+//            red: Double(r) / 0xff,
+//            green: Double(g) / 0xff,
+//            blue: Double(b) / 0xff, opacity: 1
+//        )
+//    }
+//}
 
 struct Request: Identifiable {
     var id = UUID()
+    var firestoreId: String
     var name: String
     var idNumber: String
     var department: String
     var reason: String
-    var fromDate: String
-    var toDate: String
+    var fromDate: Date
+    var toDate: Date
+    var status: Status = .pending
+
+    enum Status: String {
+        case pending, approved, rejected
+    }
 }
 
 struct RequestView: View {
     @State private var searchText = ""
     @State private var selectedSegment = 0
-    @State private var requests = [
-        Request(name: "Dr. Sameer Verma", idNumber: "123", department: "Cardiology", reason: "Leave", fromDate: "24.6.2024", toDate: "26.6.2024"),
-        Request(name: "Dr. John Doe", idNumber: "456", department: "Neurology", reason: "Conference", fromDate: "1.7.2024", toDate: "3.7.2024"),
-        Request(name: "Dr. Jane Smith", idNumber: "789", department: "Pediatrics", reason: "Vacation", fromDate: "15.8.2024", toDate: "20.8.2024")
-    ]
-    @State private var approvedDoctors: [Request] = []
-
+    @State private var requests: [Request] = []
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+    
     var filteredRequests: [Request] {
+        let list = selectedSegment == 0 ? requests.filter { $0.status == .pending } : requests.filter { $0.status != .pending }
         if searchText.isEmpty {
-            return selectedSegment == 0 ? requests : approvedDoctors
+            return list
         } else {
-            return (selectedSegment == 0 ? requests : approvedDoctors).filter { $0.name.lowercased().contains(searchText.lowercased()) || $0.department.lowercased().contains(searchText.lowercased()) }
+            return list.filter { $0.name.lowercased().contains(searchText.lowercased()) || $0.department.lowercased().contains(searchText.lowercased()) }
         }
     }
 
@@ -53,7 +68,7 @@ struct RequestView: View {
 
             Picker("Requests", selection: $selectedSegment) {
                 Text("Pending").tag(0)
-                Text("Approved").tag(1)
+                Text("Status").tag(1)
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
@@ -63,9 +78,9 @@ struct RequestView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
                         ForEach(filteredRequests) { request in
                             RequestBoxView(request: request, approveAction: {
-                                approveRequest(request)
+                                updateRequestStatus(request, status: .approved)
                             }, disapproveAction: {
-                                disapproveRequest(request)
+                                updateRequestStatus(request, status: .rejected)
                             })
                         }
                     }
@@ -74,8 +89,8 @@ struct RequestView: View {
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
-                        ForEach(filteredRequests) { doctor in
-                            ApprovedDoctorView(doctor: doctor)
+                        ForEach(filteredRequests) { request in
+                            ApprovedDoctorView(doctor: request)
                         }
                     }
                     .padding()
@@ -83,18 +98,73 @@ struct RequestView: View {
             }
         }
         .background(Color(hex: "#EFBAB1").opacity(0.3).edgesIgnoringSafeArea(.all))
-    }
-
-    private func approveRequest(_ request: Request) {
-        if let index = requests.firstIndex(where: { $0.id == request.id }) {
-            let approvedRequest = requests.remove(at: index)
-            approvedDoctors.append(approvedRequest)
+        .onAppear {
+            fetchRequests()
+        }
+        .alert(isPresented: $showingAlert) {
+            Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
     }
 
-    private func disapproveRequest(_ request: Request) {
-        if let index = requests.firstIndex(where: { $0.id == request.id }) {
-            requests.remove(at: index)
+    private func updateRequestStatus(_ request: Request, status: Request.Status) {
+        FirestoreService.shared.updateRequestStatus(requestId: request.firestoreId, status: status.rawValue) { error in
+            if let error = error {
+                alertMessage = "Failed to update request status: \(error.localizedDescription)"
+                showingAlert = true
+            } else {
+                if let index = requests.firstIndex(where: { $0.id == request.id }) {
+                    requests[index].status = status
+                    selectedSegment = 1
+                }
+            }
+        }
+    }
+
+    private func fetchRequests() {
+        FirestoreService.shared.fetchRequests { fetchedRequests, error in
+            if let error = error {
+                alertMessage = "Failed to fetch requests: \(error.localizedDescription)"
+                showingAlert = true
+            } else if let fetchedRequests = fetchedRequests {
+                requests = fetchedRequests
+            }
+        }
+    }
+}
+
+class FirestoreService {
+    static let shared = FirestoreService()
+    private let db = Firestore.firestore()
+    
+    func fetchRequests(completion: @escaping ([Request]?, Error?) -> Void) {
+        db.collection("requests").getDocuments { snapshot, error in
+            if let error = error {
+                completion(nil, error)
+            } else {
+                var requests = [Request]()
+                for document in snapshot?.documents ?? [] {
+                    let data = document.data()
+                    let request = Request(
+                        id: UUID(),
+                        firestoreId: document.documentID,
+                        name: data["doctorName"] as? String ?? "",
+                        idNumber: data["doctorId"] as? String ?? "",
+                        department: data["department"] as? String ?? "",
+                        reason: data["reason"] as? String ?? "",
+                        fromDate: (data["fromDate"] as? Timestamp)?.dateValue() ?? Date(),
+                        toDate: (data["toDate"] as? Timestamp)?.dateValue() ?? Date(),
+                        status: Request.Status(rawValue: data["status"] as? String ?? "pending") ?? .pending
+                    )
+                    requests.append(request)
+                }
+                completion(requests, nil)
+            }
+        }
+    }
+    
+    func updateRequestStatus(requestId: String, status: String, completion: @escaping (Error?) -> Void) {
+        db.collection("requests").document(requestId).updateData(["status": status]) { error in
+            completion(error)
         }
     }
 }
@@ -123,7 +193,7 @@ struct RequestBoxView: View {
                 .fontWeight(.bold)
             
             Text("Reason: \(request.reason)")
-            Text("From: \(request.fromDate) - \(request.toDate)")
+            Text("From: \(request.fromDate.formatted()) - \(request.toDate.formatted())")
             
             HStack {
                 Spacer()
@@ -163,10 +233,17 @@ struct ApprovedDoctorView: View {
                     .frame(width: 50, height: 50)
                     .foregroundColor(.gray)
                 Spacer()
-                Image(systemName: "checkmark.circle.fill")
-                    .resizable()
-                    .frame(width: 30, height: 30)
-                    .foregroundColor(.green)
+                if doctor.status == .approved {
+                    Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.green)
+                } else if doctor.status == .rejected {
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.red)
+                }
             }
             .padding(.bottom, 10)
             
@@ -178,7 +255,7 @@ struct ApprovedDoctorView: View {
                 .fontWeight(.bold)
             
             Text("Reason: \(doctor.reason)")
-            Text("From: \(doctor.fromDate) - \(doctor.toDate)")
+            Text("From: \(doctor.fromDate.formatted()) - \(doctor.toDate.formatted())")
         }
         .padding()
         .background(Color.white)
@@ -218,4 +295,16 @@ struct SearchBar: UIViewRepresentable {
     }
 }
 
+extension Date {
+    func formatted() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: self)
+    }
+}
 
+struct RequestView_Previews: PreviewProvider {
+    static var previews: some View {
+        RequestView()
+    }
+}
