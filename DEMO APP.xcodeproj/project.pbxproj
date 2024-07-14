@@ -18,6 +18,7 @@
 		B70C10482C3EE1B500042FDC /* AddDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10472C3EE1B500042FDC /* AddDoctorView.swift */; };
 		B70C104A2C3EE22A00042FDC /* EditDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10492C3EE22A00042FDC /* EditDoctorView.swift */; };
 		B70C104C2C3EE24C00042FDC /* MultiSelectPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */; };
+		B70C10522C41BDB800042FDC /* PatientCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10512C41BDB800042FDC /* PatientCardView.swift */; };
 		B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E072C3BA15A007CF707 /* Data Model.swift */; };
 		B78F4E0B2C3BA927007CF707 /* DoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0A2C3BA927007CF707 /* DoctorView.swift */; };
 		B78F4E0D2C3BDAB7007CF707 /* Data Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */; };
@@ -65,6 +66,7 @@
 		B70C10472C3EE1B500042FDC /* AddDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDoctorView.swift; sourceTree = "<group>"; };
 		B70C10492C3EE22A00042FDC /* EditDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditDoctorView.swift; sourceTree = "<group>"; };
 		B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSelectPicker.swift; sourceTree = "<group>"; };
+		B70C10512C41BDB800042FDC /* PatientCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientCardView.swift; sourceTree = "<group>"; };
 		B78F4E072C3BA15A007CF707 /* Data Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Model.swift"; sourceTree = "<group>"; };
 		B78F4E0A2C3BA927007CF707 /* DoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorView.swift; sourceTree = "<group>"; };
 		B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Controller.swift"; sourceTree = "<group>"; };
@@ -132,12 +134,12 @@
 			isa = PBXGroup;
 			children = (
 				B78F4E0A2C3BA927007CF707 /* DoctorView.swift */,
+				B70C10472C3EE1B500042FDC /* AddDoctorView.swift */,
 				B70C10412C3EE16F00042FDC /* DoctorDetailView.swift */,
 				B70C10432C3EE18700042FDC /* DoctorCardView.swift */,
 				B70C10492C3EE22A00042FDC /* EditDoctorView.swift */,
 				B70C10452C3EE19F00042FDC /* Extensions.swift */,
 				B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */,
-				B70C10472C3EE1B500042FDC /* AddDoctorView.swift */,
 			);
 			path = Doctor;
 			sourceTree = "<group>";
@@ -146,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				B78F4E0F2C3BDB07007CF707 /* Patient.swift */,
+				B70C10512C41BDB800042FDC /* PatientCardView.swift */,
 			);
 			path = PATIENT;
 			sourceTree = "<group>";
@@ -379,6 +382,7 @@
 				B78F4E122C3BDB2A007CF707 /* RevenueView.swift in Sources */,
 				B78F4E222C3BE2DE007CF707 /* forgotPassword.swift in Sources */,
 				B78F4E1C2C3BDBC0007CF707 /* OverviewView.swift in Sources */,
+				B70C10522C41BDB800042FDC /* PatientCardView.swift in Sources */,
 				B70C10422C3EE16F00042FDC /* DoctorDetailView.swift in Sources */,
 				DBCA397C2C351E3400804928 /* DEMO_APPApp.swift in Sources */,
 				B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */,

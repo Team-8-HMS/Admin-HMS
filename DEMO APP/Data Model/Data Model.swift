@@ -9,22 +9,22 @@
 import Foundation
 import UIKit
 
-struct Patient: Identifiable {
-    var id: UUID = UUID()
-    var name: String
-    var contactNumber: String
-    var email: String
-    var address: String
-    var gender: String
-    var dob: Date  // changes from age
-    var image: UIImage?
-    var emergencyContact: String
-    var upcomingAppointments: [Appointment]?
-    var previousDoctors: [String]?
-    var imageName: String {
-        image != nil ? "patient_image" : "person.circle"
-    } // extra
-}
+//struct Patient: Identifiable {
+//    var id: UUID = UUID()
+//    var name: String
+//    var contactNumber: String
+//    var email: String
+//    var address: String
+//    var gender: String
+//    var dob: Date  // changes from age
+//    var image: UIImage?
+//    var emergencyContact: String
+//    var upcomingAppointments: [Appointment]?
+//    var previousDoctors: [String]?
+//    var imageName: String {
+//        image != nil ? "patient_image" : "person.circle"
+//    } // extra
+//}
 
 
 
