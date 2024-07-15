@@ -1,3 +1,10 @@
+//
+//  AppointmentView.swift
+//  HMS_admin_Demo_02
+//
+//  Created by Sameer Verma on 04/07/24.
+//
+
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
@@ -126,8 +133,10 @@ struct AppointmentView: View {
 
     var body: some View {
         VStack {
-            CalendarView(selectedDate: $selectedDate)
-                .padding(.bottom, 20)
+            CalendarView(selectedDate: $selectedDate).padding(.top,80).frame(maxWidth: .infinity, alignment: .leading).font(.largeTitle)
+                .fontWeight(.bold)
+                
+            
 //            print(app)
             List {
                 
@@ -206,7 +215,7 @@ struct CalendarView: View {
                                     .padding(.bottom, 10)
                             }
                         }
-                        .cornerRadius(10)
+                        .cornerRadius(15)
                         .onTapGesture {
                             selectedDate = day
                         }
@@ -250,14 +259,15 @@ struct AppointmentRow: View {
                     .font(.headline)
                 Text("\(appointment.date)")
                     .font(.subheadline)
-            }
+            }.background(Color(.systemGray6))
             Spacer()
             Text(appointment.timeSlot)
                 .font(.subheadline)
             Spacer()
-            Image(systemName: "chevron.right")
+//            Image(systemName: "chevron.right")
         }
         .padding()
+        .background(Color(.systemGray6))
     }
 
     private func statusColor(for status: String) -> Color {

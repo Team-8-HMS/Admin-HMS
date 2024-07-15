@@ -18,10 +18,9 @@
 		B70C10482C3EE1B500042FDC /* AddDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10472C3EE1B500042FDC /* AddDoctorView.swift */; };
 		B70C104A2C3EE22A00042FDC /* EditDoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10492C3EE22A00042FDC /* EditDoctorView.swift */; };
 		B70C104C2C3EE24C00042FDC /* MultiSelectPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */; };
-		B70C10522C41BDB800042FDC /* PatientCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70C10512C41BDB800042FDC /* PatientCardView.swift */; };
+		B70C10582C45A27E00042FDC /* SwiftSMTP in Frameworks */ = {isa = PBXBuildFile; productRef = B70C10572C45A27E00042FDC /* SwiftSMTP */; };
 		B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E072C3BA15A007CF707 /* Data Model.swift */; };
 		B78F4E0B2C3BA927007CF707 /* DoctorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0A2C3BA927007CF707 /* DoctorView.swift */; };
-		B78F4E0D2C3BDAB7007CF707 /* Data Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */; };
 		B78F4E102C3BDB07007CF707 /* Patient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E0F2C3BDB07007CF707 /* Patient.swift */; };
 		B78F4E122C3BDB2A007CF707 /* RevenueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E112C3BDB2A007CF707 /* RevenueView.swift */; };
 		B78F4E142C3BDB3F007CF707 /* PricingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78F4E132C3BDB3F007CF707 /* PricingView.swift */; };
@@ -66,10 +65,8 @@
 		B70C10472C3EE1B500042FDC /* AddDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddDoctorView.swift; sourceTree = "<group>"; };
 		B70C10492C3EE22A00042FDC /* EditDoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditDoctorView.swift; sourceTree = "<group>"; };
 		B70C104B2C3EE24C00042FDC /* MultiSelectPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiSelectPicker.swift; sourceTree = "<group>"; };
-		B70C10512C41BDB800042FDC /* PatientCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientCardView.swift; sourceTree = "<group>"; };
 		B78F4E072C3BA15A007CF707 /* Data Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Model.swift"; sourceTree = "<group>"; };
 		B78F4E0A2C3BA927007CF707 /* DoctorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorView.swift; sourceTree = "<group>"; };
-		B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data Controller.swift"; sourceTree = "<group>"; };
 		B78F4E0F2C3BDB07007CF707 /* Patient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Patient.swift; sourceTree = "<group>"; };
 		B78F4E112C3BDB2A007CF707 /* RevenueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueView.swift; sourceTree = "<group>"; };
 		B78F4E132C3BDB3F007CF707 /* PricingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PricingView.swift; sourceTree = "<group>"; };
@@ -99,6 +96,7 @@
 			files = (
 				258AF4612C370544005E3A46 /* FirebaseAuth in Frameworks */,
 				258AF4672C370544005E3A46 /* FirebaseStorage in Frameworks */,
+				B70C10582C45A27E00042FDC /* SwiftSMTP in Frameworks */,
 				258AF4632C370544005E3A46 /* FirebaseFirestore in Frameworks */,
 				258AF4652C370544005E3A46 /* FirebaseFirestoreSwift in Frameworks */,
 			);
@@ -121,11 +119,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B70C10532C443E8600042FDC /* Overview-View */ = {
+			isa = PBXGroup;
+			children = (
+				B78F4E1B2C3BDBC0007CF707 /* OverviewView.swift */,
+			);
+			path = "Overview-View";
+			sourceTree = "<group>";
+		};
 		B78F4E062C3BA146007CF707 /* Data Model */ = {
 			isa = PBXGroup;
 			children = (
 				B78F4E072C3BA15A007CF707 /* Data Model.swift */,
-				B78F4E0C2C3BDAB7007CF707 /* Data Controller.swift */,
 			);
 			path = "Data Model";
 			sourceTree = "<group>";
@@ -148,7 +153,6 @@
 			isa = PBXGroup;
 			children = (
 				B78F4E0F2C3BDB07007CF707 /* Patient.swift */,
-				B70C10512C41BDB800042FDC /* PatientCardView.swift */,
 			);
 			path = PATIENT;
 			sourceTree = "<group>";
@@ -181,7 +185,7 @@
 				B78F4E152C3BDB57007CF707 /* AppointmentView.swift */,
 				B78F4E172C3BDB69007CF707 /* RequestView.swift */,
 				B78F4E192C3BDBAF007CF707 /* ProfileView.swift */,
-				B78F4E1B2C3BDBC0007CF707 /* OverviewView.swift */,
+				B70C10532C443E8600042FDC /* Overview-View */,
 				DBCA397F2C351E3600804928 /* Assets.xcassets */,
 				DBCA398B2C351E3700804928 /* DEMO APPTests */,
 				DBCA39952C351E3700804928 /* DEMO APPUITests */,
@@ -251,6 +255,7 @@
 				258AF4622C370544005E3A46 /* FirebaseFirestore */,
 				258AF4642C370544005E3A46 /* FirebaseFirestoreSwift */,
 				258AF4662C370544005E3A46 /* FirebaseStorage */,
+				B70C10572C45A27E00042FDC /* SwiftSMTP */,
 			);
 			productName = "DEMO APP";
 			productReference = DBCA39782C351E3400804928 /* DEMO APP.app */;
@@ -326,6 +331,7 @@
 			mainGroup = DBCA396F2C351E3400804928;
 			packageReferences = (
 				258AF45F2C370544005E3A46 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B70C10562C45A27D00042FDC /* XCRemoteSwiftPackageReference "Swift-SMTP" */,
 			);
 			productRefGroup = DBCA39792C351E3400804928 /* Products */;
 			projectDirPath = "";
@@ -376,13 +382,11 @@
 				B78F4E162C3BDB57007CF707 /* AppointmentView.swift in Sources */,
 				B78F4E262C3BECD8007CF707 /* AddPricing.swift in Sources */,
 				B78F4E0B2C3BA927007CF707 /* DoctorView.swift in Sources */,
-				B78F4E0D2C3BDAB7007CF707 /* Data Controller.swift in Sources */,
 				B78F4E142C3BDB3F007CF707 /* PricingView.swift in Sources */,
 				B70C10462C3EE19F00042FDC /* Extensions.swift in Sources */,
 				B78F4E122C3BDB2A007CF707 /* RevenueView.swift in Sources */,
 				B78F4E222C3BE2DE007CF707 /* forgotPassword.swift in Sources */,
 				B78F4E1C2C3BDBC0007CF707 /* OverviewView.swift in Sources */,
-				B70C10522C41BDB800042FDC /* PatientCardView.swift in Sources */,
 				B70C10422C3EE16F00042FDC /* DoctorDetailView.swift in Sources */,
 				DBCA397C2C351E3400804928 /* DEMO_APPApp.swift in Sources */,
 				B78F4E082C3BA15A007CF707 /* Data Model.swift in Sources */,
@@ -735,6 +739,14 @@
 				minimumVersion = 10.28.1;
 			};
 		};
+		B70C10562C45A27D00042FDC /* XCRemoteSwiftPackageReference "Swift-SMTP" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kitura/Swift-SMTP";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -757,6 +769,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 258AF45F2C370544005E3A46 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		B70C10572C45A27E00042FDC /* SwiftSMTP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B70C10562C45A27D00042FDC /* XCRemoteSwiftPackageReference "Swift-SMTP" */;
+			productName = SwiftSMTP;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

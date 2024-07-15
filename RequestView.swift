@@ -1,25 +1,14 @@
+
+//
+//  RequestView.swift
+//  HMS_admin_Demo_02
+//
+//  Created by Sameer Verma on 04/07/24.
+//
+
 import SwiftUI
 import Firebase
 import FirebaseFirestore
-
-// Extension to use hex color values
-//extension Color {
-//    init(hex: String) {
-//        let scanner = Scanner(string: hex)
-//        scanner.scanLocation = 0
-//        var rgbValue: UInt64 = 0
-//        scanner.scanHexInt64(&rgbValue)
-//        let r = (rgbValue & 0xff0000) >> 16
-//        let g = (rgbValue & 0xff00) >> 8
-//        let b = rgbValue & 0xff
-//        self.init(
-//            .sRGB,
-//            red: Double(r) / 0xff,
-//            green: Double(g) / 0xff,
-//            blue: Double(b) / 0xff, opacity: 1
-//        )
-//    }
-//}
 
 struct Request: Identifiable {
     var id = UUID()
@@ -58,13 +47,30 @@ struct RequestView: View {
             HStack {
                 Text("Request")
                     .font(.largeTitle)
-                    .bold()
+                    .fontWeight(.bold)
                 Spacer()
             }
             .padding()
 
-            SearchBar(text: $searchText)
-                .padding(.horizontal)
+            HStack {
+                
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                    TextField("Search", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(Color(UIColor.opaqueSeparator))
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray4).opacity(0.5))
+                .cornerRadius(8)
+            }
 
             Picker("Requests", selection: $selectedSegment) {
                 Text("Pending").tag(0)
@@ -97,7 +103,7 @@ struct RequestView: View {
                 }
             }
         }
-        .background(Color(hex: "#EFBAB1").opacity(0.3).edgesIgnoringSafeArea(.all))
+        .background(Color("LightColor").opacity(0.3).edgesIgnoringSafeArea(.all))
         .onAppear {
             fetchRequests()
         }

@@ -5,10 +5,9 @@
 //  Created by Sameer Verma on 04/07/24.
 //
 
+
 import SwiftUI
 import FirebaseFirestore
-
-
 
 struct MedicalTest: Identifiable, Hashable {
     var id = UUID()
@@ -32,49 +31,44 @@ struct PricingView: View {
                 HStack {
                     Text("Test Fee")
                         .font(.largeTitle)
-                        .bold()
+                        .fontWeight(.bold)
                     Spacer()
-                    Button(action: {
-                        showAddTestView = true
-                    }) {
-                        Text("+ Add Test")
-                            .padding()
-                            .background(Color.CustomRed)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
                 }
-                .padding()
-                
+                .padding(.top)
+                .padding(.leading)
+
                 HStack {
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: UIScreen.main.bounds.width / 2)
-                    Spacer()
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                    }
+                    .padding()
+                    .background(Color(.systemGray4).opacity(0.5))
+                    .cornerRadius(8)
                 }
+                .padding(.leading)
                 .padding(.horizontal)
-                .padding(.bottom, 8)
-                
+
                 VStack(alignment: .leading, spacing: 0) {
                     // Heading row
                     HStack {
                         Text("Serial Number")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("Test")
+                        Text("Test Name")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("Price")
+                        Text("Fees")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
-                    .background(Color.gray.opacity(0.2))
-                    
+
                     Divider()
-                    
+
                     // Test rows
                     List {
                         ForEach(Array(filteredTests.enumerated()), id: \.element.id) { index, test in
@@ -96,12 +90,24 @@ struct PricingView: View {
                         }
                     }
                     .listStyle(PlainListStyle())
+                    .background(Color(.systemGray6))
+                    .cornerRadius(15)
                 }
-                .background(Color(hex: "#EFBAB1").opacity(0.3))
+                .background(Color("LightColor").opacity(0.7))
                 .cornerRadius(10)
-                .shadow(radius: 5)
                 .padding()
-            } .background(Color(hex: "#EFBAB1").opacity(0.3))
+            }
+            .background(Color("LightColor").opacity(0.7))
+            
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showAddTestView = true
+                    }) {
+                        Text("Add Test")
+                    }
+                }
+            }
             .sheet(isPresented: $showAddTestView) {
                 AddTestView(onSave: fetchData)
             }
@@ -113,7 +119,7 @@ struct PricingView: View {
             fetchData()
         }
     }
-    
+
     var filteredTests: [MedicalTest] {
         if searchText.isEmpty {
             return medicalTests
@@ -121,7 +127,7 @@ struct PricingView: View {
             return medicalTests.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
-    
+
     private func fetchData() {
         let db = Firestore.firestore()
         db.collection("LabTestPrices").getDocuments { (querySnapshot, error) in
@@ -139,8 +145,11 @@ struct PricingView: View {
         }
     }
 }
+
 extension Color {
-   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)}
+   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)
+}
+
 #Preview {
-    PatientView()
+    PricingView()
 }
