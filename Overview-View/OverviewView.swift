@@ -1,12 +1,25 @@
+
+//
+//  OverviewView.swift
+//  HMS_admin_Demo_02
+//
+//  Created by Sameer Verma on 04/07/24.
+//
+
 import SwiftUI
 import Charts
+import FirebaseFirestore
 
 struct OverviewView: View {
     @State private var selectedSegment = "Yearly"
     private let segments = ["Weekly", "Monthly", "Yearly"]
-   
+    @State private var doctorCount: Int = 0 // State variable to store doctor count
+    @State private var requestsCount: Int = 0 // State variable to store request count
+    @State private var pendingRequestsCount: Int = 0 // State variable to store pending request count
+    @State private var PatientCount: Int = 0
+    
+
     var body: some View {
-        
         GeometryReader { geometry in
             VStack(spacing: 16) {
                 // Overview Section
@@ -15,23 +28,24 @@ struct OverviewView: View {
                         .font(.largeTitle)
                         .bold()
                         .padding(.leading, 16)
+                        .padding(.top)
                     Spacer()
                 }
-                .padding(.top, 16)
+
                 
                 VStack(spacing: 16) {
                     HStack(spacing: 16) {
-                        OverviewBox(title: "Today Visitors", value: "10", image: "person.3")
-                        OverviewBox(title: "Doctors", value: "1", image: "stethoscope")
-                        OverviewBox(title: "Patients", value: "10", image: "person")
+                        OverviewBox(title: "Today's Appointment", value: "0", image: "person.3").frame(width: 310)
+                        OverviewBox(title: "Doctors", value: "\(doctorCount)", image: "stethoscope").frame(width: 310)
+                        OverviewBox(title: "Patients", value: "\(PatientCount)", image: "person").frame(width: 310)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     
                     HStack(spacing: 16) {
-                        OverviewBox(title: "Patient Appointment", value: "0 Weekly", image: "calendar.badge.plus")
-                        OverviewBox(title: "Departments", value: "10", image: "building.columns")
-                        OverviewBox(title: "Today's Revenue", value: "10,000", image: "creditcard")
+                        OverviewBox(title: "Leave Requests", value: "\(pendingRequestsCount)", image: "person.fill.checkmark").frame(width: 310)
+                        OverviewBox(title: "Departments", value: "10", image: "building.columns").frame(width: 310)
+                        OverviewBox(title: "Today's Revenue", value: "0", image: "creditcard").frame(width: 310)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
@@ -49,13 +63,14 @@ struct OverviewView: View {
                         .padding()
                         
                         LineChart(data: getData(for: selectedSegment), labels: getLabels(for: selectedSegment))
-                            .frame(height: geometry.size.height * 0.4)
+                            .frame(height: geometry.size.height * 0.5)
                             .padding()
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.white)
-                            .shadow(radius: 5)
+                            .shadow(radius: 4)
+                            .padding(.top,10)
                     )
                     
                     VStack {
@@ -71,9 +86,9 @@ struct OverviewView: View {
                             (color: Color.red, value: 34.0)
                         ])
                         .frame(width: geometry.size.width * 0.25, height: geometry.size.width * 0.25)
-                        .padding(30)
+                        
 
-                        HStack(spacing: 20) {
+                        HStack() {
                             Legend(color: .orange, text: "Cardiology")
                             Legend(color: .gray, text: "Neurology")
                             Legend(color: .red, text: "Eye")
@@ -81,24 +96,31 @@ struct OverviewView: View {
                         }
                         .padding()
                         
+                        
                         Spacer()
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.white)
-                            .shadow(radius: 5)
+                            .shadow(radius: 4)
                     )
-                    .frame(width: geometry.size.width * 0.3, height: geometry.size.height * 0.5)
+                    .frame(width: geometry.size.width * 0.3, height: geometry.size.height * 0.3)
                 }
                 .padding(.horizontal, 16)
             }
-            .padding()
+//            .padding()
             .frame(width: geometry.size.width, height: geometry.size.height)
-           
-        } .background(Color(hex: "#EFBAB1").opacity(0.3))
-            .edgesIgnoringSafeArea(.all)
+            .onAppear {
+                fetchDoctorCount() // Fetch doctor count when the view appears
+                fetchPatientCount()
+                fetchRequestCount()
+               
+            }
+        }
+        .background(Color("LightColor").opacity(0.7))
+        .edgesIgnoringSafeArea(.all)
     }
-    
+
     func getData(for segment: String) -> [Double] {
         switch segment {
         case "Weekly":
@@ -111,7 +133,7 @@ struct OverviewView: View {
             return []
         }
     }
-    
+
     func getLabels(for segment: String) -> [String] {
         switch segment {
         case "Weekly":
@@ -122,6 +144,42 @@ struct OverviewView: View {
             return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         default:
             return []
+        }
+    }
+
+    func fetchDoctorCount() {
+        let db = Firestore.firestore()
+        db.collection("Doctors").getDocuments { (querySnapshot, error) in
+            if let error = error {
+                print("Error getting documents: \(error)")
+            } else {
+                doctorCount = querySnapshot?.documents.count ?? 0
+            }
+        }
+    }
+    
+    func fetchRequestCount() {
+            let db = Firestore.firestore()
+            db.collection("requests").getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting documents: \(error)")
+                } else {
+                    if let documents = querySnapshot?.documents {
+                        requestsCount = documents.count
+                        pendingRequestsCount = documents.filter { ($0.data()["status"] as? String) == "Pending" }.count
+                    }
+                }
+            }
+        }
+    
+    func fetchPatientCount() {
+        let db = Firestore.firestore()
+        db.collection("Patient").getDocuments { (querySnapshot, error) in
+            if let error = error {
+                print("Error getting documents: \(error)")
+            } else {
+                PatientCount = querySnapshot?.documents.count ?? 0
+            }
         }
     }
 }
@@ -148,16 +206,20 @@ struct OverviewBox: View {
                 Spacer()
             }
             Text(title)
-                .font(.caption)
-                .foregroundColor(.gray)
+                .font(.subheadline)
+                .foregroundColor(.black)
+            
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white)
+                .fill(Color(hex: "#E1654A"))
                 .shadow(radius: 5)
+                .opacity(0.15)
+                
+            
         )
-        .frame(height: 100)
+        .frame(height: 120)
     }
 }
 
@@ -276,3 +338,5 @@ struct Legend: View {
 #Preview {
     OverviewView()
 }
+
+

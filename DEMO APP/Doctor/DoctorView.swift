@@ -32,8 +32,8 @@ struct DoctorView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("Doctors List")
-                    .font(.title)
+                Text("Doctors")
+                    .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()
             }
@@ -53,7 +53,7 @@ struct DoctorView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color(.systemGray4).opacity(0.5))
                 .cornerRadius(8)
                 
                 Spacer()
@@ -74,6 +74,7 @@ struct DoctorView: View {
                     AddDoctorView(isPresented: $showAddDoctor, doctors: $doctors, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
                 }
             }
+            .padding(.horizontal)
             
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 20)]) {
@@ -95,7 +96,7 @@ struct DoctorView: View {
             Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
         }
         .onAppear(perform: fetchDoctors)
-        .background(Color(hex: "#EFBAB1").opacity(0.3))
+        .background(Color("LightColor").opacity(0.7))
         .fullScreenCover(item: $selectedDoctor) { doctor in
             DoctorDetailView(
                 doctor: doctor,
@@ -146,7 +147,6 @@ struct DoctorView: View {
                 print("Error deleting doctor: \(error.localizedDescription)")
             } else {
                 print("Doctor deleted successfully")
-                Auth.auth().currentUser?.delete()
                 if let imageURL = doctor.imageURL {
                     let storageRef = Storage.storage().reference(forURL: imageURL.absoluteString)
                     storageRef.delete { error in

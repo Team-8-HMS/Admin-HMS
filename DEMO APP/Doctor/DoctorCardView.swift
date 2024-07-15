@@ -12,45 +12,47 @@ struct DoctorCardView: View {
     var doctor: Doctor
     
     var body: some View {
-        VStack {
+        VStack(spacing: 17)  {
             AsyncImage(url: doctor.imageURL) { image in
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.black, lineWidth: 1))
+//                    .overlay(Circle().stroke(Color.black, lineWidth: 1))
             } placeholder: {
                 ProgressView()
             }
             Text(doctor.name)
                 .font(.headline)
+                .foregroundColor(.primary)
                 .fontWeight(.bold)
-                .padding(.top)
-                .foregroundColor(.black)
+  
             
             Text(doctor.department)
                 .font(.subheadline)
                 .foregroundColor(.black)
             
-            Text("ID: \(doctor.idNumber)")
-                .font(.subheadline)
-                .foregroundColor(.black)
-                .padding(.bottom)
+//            Text("ID: \(doctor.idNumber)")
+//                .font(.subheadline)
+//                .foregroundColor(.black)
+//                .padding(.bottom)
             
-            Text("Entry: \(DateFormatter.timeFormatter.string(from: doctor.entryTime))")
-                .font(.subheadline)
-                .foregroundColor(.black)
-            
-            Text("Exit: \(DateFormatter.timeFormatter.string(from: doctor.exitTime))")
-                .font(.subheadline)
-                .foregroundColor(.black)
-                .padding(.bottom)
+//            Text("Entry: \(DateFormatter.timeFormatter.string(from: doctor.entryTime))")
+//                .font(.subheadline)
+//                .foregroundColor(.black)
+//
+//            Text("Exit: \(DateFormatter.timeFormatter.string(from: doctor.exitTime))")
+//                .font(.subheadline)
+//                .foregroundColor(.black)
+//                .padding(.bottom)
         }
-        .frame(width: 197, height: 300)
-        .background(Color.white.opacity(0.7))
-        .cornerRadius(36)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
-        .padding(.all, 5)
+        .frame(width: 200, height: 200) // Fixed width and height
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(15)
+        .shadow(radius: 1.5)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 }

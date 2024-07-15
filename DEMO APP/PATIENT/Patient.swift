@@ -1,3 +1,11 @@
+//  PatientView.swift
+//  HMS_admin_Demo_02
+//
+//  Created by Sameer Verma on 06/07/24.
+//
+
+
+
 import SwiftUI
 import PhotosUI
 import FirebaseAuth
@@ -82,6 +90,9 @@ struct PatientView: View {
 
     var body: some View {
         VStack {
+            
+            
+            
             HStack {
                 Text("Patients")
                     .font(.largeTitle)
@@ -89,8 +100,10 @@ struct PatientView: View {
                 Spacer()
             }
             .padding(.top)
+            
 
             HStack {
+                
                 HStack {
                     Image(systemName: "magnifyingglass")
                     TextField("Search", text: $searchText)
@@ -105,7 +118,7 @@ struct PatientView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color(.systemGray4).opacity(0.5))
                 .cornerRadius(8)
 
                 Button(action: {
@@ -113,21 +126,23 @@ struct PatientView: View {
                 }) {
                     Image(systemName: filterByContact ? "phone.fill" : "line.horizontal.3.decrease.circle")
                         .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
+//                        .background(Color(.systemGray4).opacity(0.5))
+//                        .cornerRadius(8)
                 }
                 .popover(isPresented: $filterByContact) {
                     VStack {
                         TextField("Filter by Contact", text: $filterText)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray4).opacity(0.5))
                             .cornerRadius(8)
                         Button("Apply") {
                             filterByContact = false
                         }
                         .padding()
+                        
                     }
                     .padding()
+                    
                 }
 
                 Spacer()
@@ -166,12 +181,11 @@ struct PatientView: View {
             Spacer()
         }
         .padding()
-        .background(Color(hex: "#EFBAB1").opacity(0.3))
         .alert(isPresented: $showSuccessMessage) {
             Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
         }
         .onAppear(perform: fetchPatients)
-        .background(Color(hex: "#EFBAB1").opacity(0.3))
+        .background(Color("LightColor").opacity(0.7))
         .fullScreenCover(item: $selectedPatient) { patient in
             PatientDetailView(
                 patient: patient,
@@ -236,7 +250,7 @@ struct AddPatientView: View {
     @State private var contactNumber: String = ""
     @State private var email: String = ""
     @State private var address: String = ""
-    @State private var gender: String = "Select"
+    @State private var gender: String = "Male"
     @State private var dob: Date = Date()
     @State private var emergencyContact: String = ""
     @State private var image: UIImage? = nil
@@ -248,6 +262,16 @@ struct AddPatientView: View {
     var body: some View {
         VStack {
             Form {
+                Section(header: Text("Profile Picture")) {
+                    Button(action: {
+                        showingImagePicker.toggle()
+                    }) {
+                        Text("Choose Photo")
+                    }
+                    .sheet(isPresented: $showingImagePicker) {
+                        PatientImagePicker(image: $image)
+                    }
+                }
                 Section(header: Text("First Name")) {
                     TextField("Enter First Name", text: $firstname)
                 }
@@ -278,16 +302,7 @@ struct AddPatientView: View {
                 Section(header: Text("Emergency Contact")) {
                     TextField("Enter Emergency Contact", text: $emergencyContact)
                 }
-                Section {
-                    Button(action: {
-                        showingImagePicker.toggle()
-                    }) {
-                        Text("Choose Photo")
-                    }
-                    .sheet(isPresented: $showingImagePicker) {
-                        PatientImagePicker(image: $image)
-                    }
-                }
+                
             }
             HStack {
                 Button("Back") {
@@ -406,39 +421,66 @@ struct PatientDetailView: View {
     var body: some View {
         VStack(spacing: 20) {
             HStack {
-                Button("Back") {
-                    isPresented = nil
-                }
-                .padding()
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                
-                Spacer()
-                
-                Button("Edit") {
-                    editedPatient = patient
-                    isEditing.toggle()
-                }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-            }
-            .padding()
+                Button(action: {
+                                    isPresented = nil
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                    Text("Back")
+                                }
+                                .padding()
+                                .foregroundColor(.white)
+                                .background(Color.gray)
+                                .cornerRadius(8)
+                                .padding(.horizontal)
 
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 100)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                                Spacer()
+
+                                Button(action: {
+                                    editedPatient = patient
+                                    isEditing.toggle()
+                                }) {
+                                    Image(systemName: "pencil")
+                                    Text("Edit")
+                                }
+                                .padding()
+                                .foregroundColor(.white)
+                                .background(Color.blue)
+                                .cornerRadius(8)
+                                .padding(.horizontal)
+                            }
+                            .padding(.top, 20)
+
+            if let imageURL = patient.imageURL, let url = URL(string: imageURL.absoluteString) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 150, height: 150)
+                            .clipShape(Circle())
+                            .padding(.top, 20)
+//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    case .failure:
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 150, height: 150)
+                            .clipShape(Circle())
+                            .padding(.top, 20)
+//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
             } else {
                 Image(systemName: "person.circle.fill")
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 100)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 100, height: 100)
+                    .padding(.top, 20)
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.black, lineWidth: 2))
             }
@@ -446,9 +488,6 @@ struct PatientDetailView: View {
             Text("\(patient.firstname) \(patient.lastname)")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-            Text("Age: \(Calendar.current.dateComponents([.year], from: patient.dob, to: Date()).year ?? 0)")
-                .font(.title2)
-                .padding(.bottom)
 
             Form {
                 Section(header: Text("ID")) {
@@ -712,11 +751,16 @@ struct PatientImagePicker: UIViewControllerRepresentable {
 // ** MARK: -  Patient Card View  ****
 // MARK: -  Patient Card View
 
+//-------------------------------------------------------
+// ** MARK: -  Patient Card View  ****
+// MARK: -  Patient Card View
+
 struct PatientCardView: View {
     var patient: Patient
 
     var body: some View {
-        VStack {
+        VStack(spacing: 17) {
+            
             if let imageURL = patient.imageURL, let url = URL(string: imageURL.absoluteString) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -728,14 +772,14 @@ struct PatientCardView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 100, height: 100)
                             .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     case .failure:
                         Image(systemName: "person.circle.fill")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 100, height: 100)
                             .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     @unknown default:
                         EmptyView()
                     }
@@ -751,15 +795,21 @@ struct PatientCardView: View {
 
             Text("\(patient.firstname) \(patient.lastname)")
                 .font(.headline)
+                .foregroundColor(.primary)
             Text(patient.contactNumber)
                 .font(.subheadline)
+                .foregroundColor(.black)
         }
+        .frame(width: 200, height: 200) // Fixed width and height
         .padding()
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 5)
+        .background(Color(.systemGray6))
+        .cornerRadius(15)
+        .shadow(radius: 1.5)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 }
+
 
 //-------------------------------------------------------
 // ** MARK: -  Extensions  ****
