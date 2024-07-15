@@ -10,8 +10,36 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import SwiftSMTP
 
 struct AddDoctorView: View {
+    class EmailSender {
+        static let shared = EmailSender()
+        private init() {}
+        
+        func sendEmail(subject: String, body: String, to: String, from: String, smtpHost: String, smtpPort: Int, username: String, password: String) {
+            let smtp = SMTP(hostname: smtpHost, email: from, password: password, port: Int32(smtpPort), tlsMode: .requireSTARTTLS, tlsConfiguration: nil)
+            
+            let fromEmail = Mail.User(name: "Sender Name", email: from)
+            let toEmail = Mail.User(name: "Recipient Name", email: to)
+            
+            let mail = Mail(
+                from: fromEmail,
+                to: [toEmail],
+                subject: subject,
+                text: body
+            )
+            
+            smtp.send(mail) { (error) in
+                if let error = error {
+                    print("Error sending email: \(error)")
+                } else {
+                    print("Email sent successfully!")
+                }
+            }
+        }
+    }
+
     @Binding var isPresented: Bool
     @Binding var doctors: [Doctor]
     @Binding var showSuccessMessage: Bool
@@ -72,7 +100,7 @@ struct AddDoctorView: View {
                     showingImagePicker = true
                 }
                 
-                Section(header: Text("ID Number")) {
+                Section(header: Text("Medical ID Number")) {
                     TextField("Enter ID Number", value: $idNumber, formatter: NumberFormatter())
                         .keyboardType(.numberPad)
                 }
@@ -83,27 +111,33 @@ struct AddDoctorView: View {
                     TextField("Contact No", text: $contactNo)
                         .keyboardType(.numberPad)
                 }
+                
+                
+//-------------------------------------------------------
                 Section(header: Text("E-mail")) {
-                    TextField("Enter Email (Optional)", text: $email)
+                    TextField("Enter Email ", text: $email)
                         .onChange(of: email) { newValue in
                             isValidEmail(email)
                         }
                         .overlay(HStack {
-                            Spacer()
-                            if email.isEmpty {
-                                Image(systemName: "")
-                                    .padding()
-                            } else if isValidEmail(email) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                                    .padding()
-                            } else {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red)
-                                    .padding()
-                            }
-                        })
+                        Spacer()
+                        if email.isEmpty {
+                            Image(systemName: "")
+                                .padding()
+                        } else if isValidEmail(email) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .padding()
+                        } else {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                                .padding()
+                        }
+                    })
                 }
+                
+                
+                
                 Section(header: Text("Address")) {
                     TextField("Address", text: $address)
                 }
@@ -264,8 +298,10 @@ struct AddDoctorView: View {
             showErrorMessage = false
         }
     }
+   
+    //---------------------------------------------------
     
-    private func validateEmail() -> Bool {
+    private func validateEmail() -> Bool{
         let allowedDomains = [
             "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
             "aol.com", "mail.com", "zoho.com", "protonmail.com", "gmx.com","galgotiasuniversity.edu.in"
@@ -307,15 +343,13 @@ struct AddDoctorView: View {
             metadata.contentType = "image/jpeg"
             imagesRef.putData(imageData, metadata: metadata) { metadata, error in
                 guard metadata != nil else {
-                    errorMessage = "Failed to upload image: \(error?.localizedDescription ?? "Unknown error")"
-                    showErrorMessage = true
+                    // Uh-oh, an error occurred!
                     return
                 }
-                // You can also access the download URL after upload.
+                // You can also access to download URL after upload.
                 imagesRef.downloadURL { url, error in
                     guard let downloadURL = url else {
-                        errorMessage = "Failed to retrieve image URL: \(error?.localizedDescription ?? "Unknown error")"
-                        showErrorMessage = true
+                        // Uh-oh, an error occurred!
                         return
                     }
                     saveDoctorData(imageURL: downloadURL)
@@ -325,51 +359,66 @@ struct AddDoctorView: View {
     }
     
     private func saveDoctorData(imageURL: URL) {
-        
-//        doctorItemCount()
         let db = Firestore.firestore()
-        Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
-            if let error = error {
-                errorMessage = "Failed to create user: \(error.localizedDescription)"
-                showErrorMessage = true
-                return
-            }
-            
-            guard let userID = authResult?.user.uid else {
-                errorMessage = "Failed to get user ID"
-                showErrorMessage = true
-                return
-            }
-            
-            let newDoctor = Doctor(id: userID, idNumber: idNumber,
-                                   name: name,
-                                   contactNo: contactNo,
-                                   email: email,
-                                   address: address,
-                                   gender: gender,
-                                   dob: dob,
-                                   degree: degree,
-                                   department: department,
-                                   status: status,
-                                   entryTime: entryTime,
-                                   exitTime: exitTime,
-                                   visitingFees: visitingFees,
-                                   imageURL: imageURL,
-                                   workingDays: workingDays,
-                                   yearsOfExperience: yearsOfExperience)
-            let doctorData = newDoctor.toDictionary()
-            
-            db.collection("Doctors").document(userID).setData(doctorData) { error in
+        do {
+            EmailSender.shared.sendEmail(
+                subject: "Credentials for Dr.\(name)",
+                body: """
+                Dear Dr. \(name)
+                
+                I hope this message finds you well.
+
+                Please find below the login credentials for  \(name). These credentials will allow to access the necessary systems and resources:
+                Email: \(email)
+                Temporary Password: HMS@123
+                """,
+                to: "\(email)",
+                from: "sudhanshukumar07777@gmail.com",
+                smtpHost: "smtp.gmail.com",
+                smtpPort: 587,
+                username: "sudhanshukumar07777@gmail.com",
+                password: "mmcp uupe mtyi xyic"
+            )
+
+            Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
                 if let error = error {
-                    errorMessage = "Failed to save doctor data: \(error.localizedDescription)"
-                    showErrorMessage = true
+                    print("error")
                 } else {
-                    doctors.append(newDoctor)
-                    successMessage = "Doctor added successfully"
-                    showSuccessMessage = true
-                    isPresented = false
+                    if let authResult = authResult {
+                        let userID = authResult.user.uid
+                       
+                        let newDoctor = Doctor(id: userID, idNumber: idNumber,
+                                               name: name,
+                                               contactNo: contactNo,
+                                               email: email,
+                                               address: address,
+                                               gender: gender,
+                                               dob: dob,
+                                               degree: degree,
+                                               department: department,
+                                               status: status,
+                                               entryTime: entryTime,
+                                               exitTime: exitTime,
+                                               visitingFees: visitingFees,
+                                               imageURL: imageURL,
+                                               workingDays: workingDays,
+                                               yearsOfExperience: yearsOfExperience)
+                        let doctorData = newDoctor.toDictionary()
+                        do {
+                            try db.collection("Doctors").document(userID).setData(doctorData)
+                            
+                            doctors.append(newDoctor)
+                            successMessage = "Doctor Added Successfully"
+                            showSuccessMessage = true
+                            isPresented = false
+                        } catch {
+                            print("Error setting Doctor data: \(error.localizedDescription)")
+                        }
+                    }
                 }
             }
+        } catch let error {
+            print("Error writing doctor to Firestore: \(error)")
         }
     }
 }

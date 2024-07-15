@@ -5,10 +5,9 @@
 //  Created by Sameer Verma on 04/07/24.
 //
 
+
 import SwiftUI
 import FirebaseFirestore
-
-
 
 struct MedicalTest: Identifiable, Hashable {
     var id = UUID()
@@ -29,16 +28,15 @@ struct PricingView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                
                 HStack {
                     Text("Test Fee")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     Spacer()
-                    
-                }.padding(.top)
+                }
+                .padding(.top)
                 .padding(.leading)
-                
+
                 HStack {
                     HStack {
                         Image(systemName: "magnifyingglass")
@@ -48,22 +46,10 @@ struct PricingView: View {
                     .padding()
                     .background(Color(.systemGray4).opacity(0.5))
                     .cornerRadius(8)
-//                    .frame(maxWidth: .infinity,alignment: .leading)
- 
-                    
-                    Button(action: {
-                        showAddTestView = true
-                    }) {
-                        Text("+ Add Test")
-                            .padding()
-                            .background(Color(hex: "#E1654A"))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                }.padding(.leading)
+                }
+                .padding(.leading)
                 .padding(.horizontal)
-                
-               
+
                 VStack(alignment: .leading, spacing: 0) {
                     // Heading row
                     HStack {
@@ -80,10 +66,9 @@ struct PricingView: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
-                    
-                    
+
                     Divider()
-                    
+
                     // Test rows
                     List {
                         ForEach(Array(filteredTests.enumerated()), id: \.element.id) { index, test in
@@ -107,12 +92,22 @@ struct PricingView: View {
                     .listStyle(PlainListStyle())
                     .background(Color(.systemGray6))
                     .cornerRadius(15)
-                    
                 }
                 .background(Color("LightColor").opacity(0.7))
                 .cornerRadius(10)
                 .padding()
-            }  .background(Color("LightColor").opacity(0.7))
+            }
+            .background(Color("LightColor").opacity(0.7))
+            
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showAddTestView = true
+                    }) {
+                        Text("Add Test")
+                    }
+                }
+            }
             .sheet(isPresented: $showAddTestView) {
                 AddTestView(onSave: fetchData)
             }
@@ -124,7 +119,7 @@ struct PricingView: View {
             fetchData()
         }
     }
-    
+
     var filteredTests: [MedicalTest] {
         if searchText.isEmpty {
             return medicalTests
@@ -132,7 +127,7 @@ struct PricingView: View {
             return medicalTests.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
-    
+
     private func fetchData() {
         let db = Firestore.firestore()
         db.collection("LabTestPrices").getDocuments { (querySnapshot, error) in
@@ -150,8 +145,11 @@ struct PricingView: View {
         }
     }
 }
+
 extension Color {
-   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)}
+   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)
+}
+
 #Preview {
-    PatientView()
+    PricingView()
 }
