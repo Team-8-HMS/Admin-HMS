@@ -41,17 +41,10 @@ struct RequestView: View {
             return list.filter { $0.name.lowercased().contains(searchText.lowercased()) || $0.department.lowercased().contains(searchText.lowercased()) }
         }
     }
-
+    
     var body: some View {
+        NavigationStack{
         VStack {
-            HStack {
-                Text("Request")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                Spacer()
-            }
-            .padding()
-
             HStack {
                 
                 HStack {
@@ -71,14 +64,14 @@ struct RequestView: View {
                 .background(Color(.systemGray4).opacity(0.5))
                 .cornerRadius(8)
             }
-
+            
             Picker("Requests", selection: $selectedSegment) {
                 Text("Pending").tag(0)
                 Text("Status").tag(1)
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
-
+            
             if selectedSegment == 0 {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
@@ -110,7 +103,8 @@ struct RequestView: View {
         .alert(isPresented: $showingAlert) {
             Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
         }
-    }
+        }.navigationTitle("Requests")
+}
 
     private func updateRequestStatus(_ request: Request, status: Request.Status) {
         FirestoreService.shared.updateRequestStatus(requestId: request.firestoreId, status: status.rawValue) { error in

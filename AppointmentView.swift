@@ -132,24 +132,26 @@ struct AppointmentView: View {
     @State private var selectedDate = Date()
 
     var body: some View {
+        NavigationStack{
         VStack {
             CalendarView(selectedDate: $selectedDate).padding(.top,80).frame(maxWidth: .infinity, alignment: .leading).font(.largeTitle)
                 .fontWeight(.bold)
-                
             
-//            print(app)
+            
+            //            print(app)
             List {
                 
                 ForEach(app.filter { $0.date.isSameDay(as: selectedDate) }) { appointment in
                     AppointmentRow(appointment: appointment)
-//                    print(app)
-
+                    //                    print(app)
+                    
                 }
             }
             .padding(.horizontal) // Add horizontal padding to the List
             .padding(.bottom, 10) // Add bottom padding to the List
         }
         .padding(.horizontal, -10)
+        }.navigationTitle("Appointments")
         
 
     }

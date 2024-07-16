@@ -30,14 +30,15 @@ struct DoctorView: View {
     }
     
     var body: some View {
+        NavigationStack{
         VStack {
-            HStack {
-                Text("Doctors")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                Spacer()
-            }
-            .padding(.top)
+            //            HStack {
+            //                Text("Doctors")
+            //                    .font(.largeTitle)
+            //                    .fontWeight(.bold)
+            //                Spacer()
+            //            }
+            //            .padding(.top)
             HStack {
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -123,6 +124,8 @@ struct DoctorView: View {
                     }
             }
         }
+        }.navigationTitle("Doctors")
+        
     }
     
     private func fetchDoctors() {

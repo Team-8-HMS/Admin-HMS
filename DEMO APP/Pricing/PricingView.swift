@@ -27,31 +27,22 @@ struct PricingView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(alignment: .leading) {
+                
+                
                 HStack {
-                    Text("Test Fee")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Spacer()
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Search", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(.leading, 8)
                 }
-                .padding(.top)
-                .padding(.leading)
-
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                        TextField("Search", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                    }
-                    .padding()
-                    .background(Color(.systemGray4).opacity(0.5))
-                    .cornerRadius(8)
-                }
-                .padding(.leading)
+                .padding()
+                .background(Color(.systemGray4).opacity(0.5))
+                .cornerRadius(8)
                 .padding(.horizontal)
-
+                
                 VStack(alignment: .leading, spacing: 0) {
-                    // Heading row
                     HStack {
                         Text("Serial Number")
                             .fontWeight(.bold)
@@ -62,14 +53,12 @@ struct PricingView: View {
                         Text("Fees")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
-
+                    
                     Divider()
-
-                    // Test rows
+                    
                     List {
                         ForEach(Array(filteredTests.enumerated()), id: \.element.id) { index, test in
                             Button(action: {
@@ -84,21 +73,26 @@ struct PricingView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Spacer()
                                     Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
                                 }
                                 .padding(.vertical, 8)
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                     .listStyle(PlainListStyle())
                     .background(Color(.systemGray6))
                     .cornerRadius(15)
+                    .refreshable {
+                        fetchData()
+                    }
                 }
-                .background(Color("LightColor").opacity(0.7))
+                .background(Color(.systemGray5).opacity(0.7))
                 .cornerRadius(10)
                 .padding()
             }
-            .background(Color("LightColor").opacity(0.7))
-            
+            .background(Color(.systemGray5).opacity(0.7))
+            .navigationTitle("Lab Tests")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -144,12 +138,4 @@ struct PricingView: View {
             }
         }
     }
-}
-
-extension Color {
-   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)
-}
-
-#Preview {
-    PricingView()
 }
