@@ -193,8 +193,8 @@ struct RequestBoxView: View {
             
             Text(request.name)
                 .fontWeight(.bold)
-            Text("ID: \(request.idNumber)")
-                .fontWeight(.bold)
+//            Text("ID: \(request.idNumber)")
+//                .fontWeight(.bold)
             Text("Department: \(request.department)")
                 .fontWeight(.bold)
             
@@ -255,8 +255,8 @@ struct ApprovedDoctorView: View {
             
             Text(doctor.name)
                 .fontWeight(.bold)
-            Text("ID: \(doctor.idNumber)")
-                .fontWeight(.bold)
+//            Text("ID: \(doctor.idNumber)")
+//                .fontWeight(.bold)
             Text("Department: \(doctor.department)")
                 .fontWeight(.bold)
             

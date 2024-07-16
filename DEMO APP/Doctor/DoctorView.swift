@@ -77,7 +77,7 @@ struct DoctorView: View {
             .padding(.horizontal)
             
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 20)]) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
                     ForEach(filteredDoctors) { doctor in
                         Button(action: {
                             selectedDoctor = doctor
