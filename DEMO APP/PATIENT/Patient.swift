@@ -11,11 +11,11 @@ import PhotosUI
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
-import SwiftSMTP
+
 
 
 //-------------------------------------------------------
-// * MARK: -  Patient Data Model   ***
+// * MARK: -  Patient Data Model   *
 // MARK: -  Patient Data Model
 
 struct Patient: Identifiable, Codable, Equatable {
@@ -63,7 +63,7 @@ struct Patient: Identifiable, Codable, Equatable {
 }
 
 //-------------------------------------------------------
-// * MARK: -  Patient View  ***
+// * MARK: -  Patient View  *
 // MARK: -  Patient View
 
 struct PatientView: View {
@@ -235,8 +235,24 @@ struct PatientView: View {
 }
 
 //-------------------------------------------------------
-// * MARK: -  Add Patient View  ***
+// * MARK: -  Add Patient View  *
 // MARK: - Add Patient View
+
+//-------------------------------------------------------
+// * MARK: -  Add Patient View  *
+// MARK: - Add Patient View
+
+
+//func isValidEmail(_ email: String) -> Bool {
+//    let allowedDomains = [
+//        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
+//        "aol.com", "mail.com", "zoho.com", "protonmail.com", "gmx.com"
+//    ]
+//    let emailRegEx = "^[A-Z0-9a-z._%+-]+@(" + allowedDomains.joined(separator: "|") + ")$"
+//    let emailPred = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
+//    return emailPred.evaluate(with: email)
+//}
+
 
 struct AddPatientView: View {
     @Binding var isPresented: Bool
@@ -256,33 +272,10 @@ struct AddPatientView: View {
     @State private var image: UIImage? = nil
     @State private var showingImagePicker = false
     @State private var showErrorMessage = false
-    
-    class EmailSender {
-        static let shared = EmailSender()
-        private init() {}
-        
-        func sendEmail(subject: String, body: String, to: String, from: String, smtpHost: String, smtpPort: Int, username: String, password: String) {
-            let smtp = SMTP(hostname: smtpHost, email: from, password: password, port: Int32(smtpPort), tlsMode: .requireSTARTTLS, tlsConfiguration: nil)
-            
-            let fromEmail = Mail.User(name: "Sender Name", email: from)
-            let toEmail = Mail.User(name: "Recipient Name", email: to)
-            
-            let mail = Mail(
-                from: fromEmail,
-                to: [toEmail],
-                subject: subject,
-                text: body
-            )
-            
-            smtp.send(mail) { (error) in
-                if let error = error {
-                    print("Error sending email: \(error)")
-                } else {
-                    print("Email sent successfully!")
-                }
-            }
-        }
-    }
+    @State private var firstnameError: String? = nil
+    @State private var lastnameError: String? = nil
+    @State private var contactNumberError: String? = nil
+    @State private var emailError: String? = nil
 
     let genders = ["Male", "Female", "Others"]
 
@@ -290,26 +283,87 @@ struct AddPatientView: View {
         VStack {
             Form {
                 Section(header: Text("Profile Picture")) {
-                    Button(action: {
-                        showingImagePicker.toggle()
-                    }) {
-                        Text("Choose Photo")
+                    VStack {
+                        Button(action: {
+                            showingImagePicker.toggle()
+                        }) {
+                            if let image = image {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                    .shadow(radius: 2)
+                            } else {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                    .shadow(radius: 2)
+                            }
+                        }
+                        .sheet(isPresented: $showingImagePicker) {
+                            PatientImagePicker(image: $image)
+                        }
                     }
-                    .sheet(isPresented: $showingImagePicker) {
-                        PatientImagePicker(image: $image)
-                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
                 }
                 Section(header: Text("First Name")) {
                     TextField("Enter First Name", text: $firstname)
+                        .onChange(of: firstname) { _ in
+                            validateFields()
+                        }
+                    if let firstnameError = firstnameError {
+                        Text(firstnameError).foregroundColor(.red)
+                    }
                 }
                 Section(header: Text("Last Name")) {
                     TextField("Enter Last Name", text: $lastname)
+                        .onChange(of: lastname) { _ in
+                            validateFields()
+                        }
+                    if let lastnameError = lastnameError {
+                        Text(lastnameError).foregroundColor(.red)
+                    }
                 }
                 Section(header: Text("Contact No")) {
                     TextField("Contact No", text: $contactNumber)
+                        .keyboardType(.numberPad)
+                        .onChange(of: contactNumber) { _ in
+                            validateFields()
+                        }
+                    if let contactNumberError = contactNumberError {
+                        Text(contactNumberError).foregroundColor(.red)
+                    }
                 }
                 Section(header: Text("E-mail")) {
                     TextField("Enter Email", text: $email)
+                        .keyboardType(.emailAddress)
+                        .onChange(of: email) { _ in
+                            validateFields()
+                        }
+                        .overlay(HStack {
+                                                Spacer()
+                                                if email.isEmpty {
+                                                    Image(systemName: "")
+                                                        .padding()
+                                                } else if isValidEmail(email) {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .foregroundColor(.green)
+                                                        .padding()
+                                                } else {
+                                                    Image(systemName: "xmark.circle.fill")
+                                                        .foregroundColor(.red)
+                                                        .padding()
+                                                }
+                                            })
+                    if let emailError = emailError {
+                        Text(emailError).foregroundColor(.red)
+                    }
                 }
                 Section(header: Text("Address")) {
                     TextField("Address", text: $address)
@@ -328,8 +382,8 @@ struct AddPatientView: View {
                 }
                 Section(header: Text("Emergency Contact")) {
                     TextField("Enter Emergency Contact", text: $emergencyContact)
+                        .keyboardType(.numberPad)
                 }
-                
             }
             HStack {
                 Button("Back") {
@@ -343,9 +397,7 @@ struct AddPatientView: View {
                 Spacer()
                 
                 Button("Save") {
-                    if firstname.isEmpty || lastname.isEmpty || contactNumber.isEmpty || email.isEmpty || address.isEmpty || gender.isEmpty {
-                        showErrorMessage = true
-                    } else {
+                    if validateFields() {
                         addPatient()
                     }
                 }
@@ -354,11 +406,40 @@ struct AddPatientView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
                 .alert(isPresented: $showErrorMessage) {
-                    Alert(title: Text("Error"), message: Text("All fields are mandatory."), dismissButton: .default(Text("OK")))
+                    Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
                 }
             }
             .padding()
         }
+    }
+    
+    private func validateFields() -> Bool {
+        var valid = true
+        
+        if firstname == lastname {
+            firstnameError = "First name and last name cannot be the same."
+            lastnameError = "First name and last name cannot be the same."
+            valid = false
+        } else {
+            firstnameError = nil
+            lastnameError = nil
+        }
+        
+        if contactNumber.count != 10 {
+            contactNumberError = "Contact number must be 10 digits."
+            valid = false
+        } else {
+            contactNumberError = nil
+        }
+        
+        if email.contains("@@") || email.contains("..") {
+            emailError = "Email cannot contain consecutiv '@' or '.' characters."
+            valid = false
+        } else {
+            emailError = nil
+        }
+        
+        return valid
     }
     
     private func addPatient() {
@@ -392,24 +473,6 @@ struct AddPatientView: View {
     private func savePatientData(imageURL: URL) {
         let db = Firestore.firestore()
         do {
-            EmailSender.shared.sendEmail(
-                subject: "Credentials for \(firstname) \(lastname)",
-                body: """
-                Dear  \(firstname) \(lastname)
-                
-                I hope this message finds you well.
-
-                Please find below the login credentials for  \(firstname) \(lastname). These credentials will allow to access the necessary systems and resources:
-                Email: \(email)
-                Temporary Password: HMS@123
-                """,
-                to: "\(email)",
-                from: "Team_08@gmail.com",
-                smtpHost: "smtp.gmail.com",
-                smtpPort: 587,
-                username: "sudhanshukumar07777@gmail.com",
-                password: "mmcp uupe mtyi xyic"
-            )
             Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
                 if let error = error {
                     print("error")
@@ -431,7 +494,7 @@ struct AddPatientView: View {
                             try db.collection("Patient").document(userID).setData(patientData)
                             patients.append(newPatient)
                             successMessage = "Patient Added Successfully"
-                            showSuccessMessage = true
+                            showSuccessMessage = false
                             isPresented = false
                         } catch {
                             print("Error setting Patient data: \(error.localizedDescription)")
@@ -445,8 +508,9 @@ struct AddPatientView: View {
     }
 }
 
+
 //-------------------------------------------------------
-// * MARK: -  Patient Details View  ***
+// * MARK: -  Patient Details View  *
 // MARK: -  Patient Details View
 
 struct PatientDetailView: View {
@@ -583,7 +647,7 @@ struct PatientDetailView: View {
 }
 
 //-------------------------------------------------------
-// * MARK: - Edit Patient  View  ***
+// * MARK: - Edit Patient  View  *
 // MARK: - Edit Patient  View
 
 struct EditPatientView: View {
@@ -606,6 +670,7 @@ struct EditPatientView: View {
     @State private var showingImagePicker = false
     @State private var showErrorMessage = false
     @State private var errorMessage = ""
+   
 
     let genders = ["Male", "Female", "Others"]
 
@@ -624,6 +689,8 @@ struct EditPatientView: View {
                 Section(header: Text("E-mail")) {
                     TextField("Enter Email (Optional)", text: $email)
                 }
+               
+            
                 Section(header: Text("Address")) {
                     TextField("Address", text: $address)
                 }
@@ -731,7 +798,7 @@ struct EditPatientView: View {
                     patients[index].imageURL = imageURL
                 }
                 successMessage = "Patient Updated Successfully"
-                showSuccessMessage = true
+                showSuccessMessage = false
                 isPresented = false
                 parentPresentation = nil
             }
@@ -751,7 +818,7 @@ struct EditPatientView: View {
 }
 
 //-------------------------------------------------------
-// * MARK: -  Patient Image Picker  ***
+// * MARK: -  Patient Image Picker  *
 // MARK: -  Patient Image Picker
 
 struct PatientImagePicker: UIViewControllerRepresentable {
@@ -793,11 +860,11 @@ struct PatientImagePicker: UIViewControllerRepresentable {
 }
 
 //-------------------------------------------------------
-// * MARK: -  Patient Card View  ***
+// * MARK: -  Patient Card View  *
 // MARK: -  Patient Card View
 
 //-------------------------------------------------------
-// * MARK: -  Patient Card View  ***
+// * MARK: -  Patient Card View  *
 // MARK: -  Patient Card View
 
 struct PatientCardView: View {
