@@ -373,11 +373,11 @@ struct AddDoctorView: View {
                 Temporary Password: HMS@123
                 """,
                 to: "\(email)",
-                from: "Team_08@gmail.com",
+                from: "gumaclab@gmail.com",
                 smtpHost: "smtp.gmail.com",
                 smtpPort: 587,
-                username: "sudhanshukumar07777@gmail.com",
-                password: "mmcp uupe mtyi xyic"
+                username: "gumaclab@gmail.com",
+                password: "cfmn rzgw ovyh krud"
             )
 
             Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
