@@ -11,7 +11,7 @@ import PhotosUI
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
-
+import SwiftSMTP
 
 
 //-------------------------------------------------------
@@ -255,6 +255,32 @@ struct PatientView: View {
 
 
 struct AddPatientView: View {
+    class EmailSender {
+            static let shared = EmailSender()
+            private init() {}
+            
+            func sendEmail(subject: String, body: String, to: String, from: String, smtpHost: String, smtpPort: Int, username: String, password: String) {
+                let smtp = SMTP(hostname: smtpHost, email: from, password: password, port: Int32(smtpPort), tlsMode: .requireSTARTTLS, tlsConfiguration: nil)
+                
+                let fromEmail = Mail.User(name: "Sender Name", email: from)
+                let toEmail = Mail.User(name: "Recipient Name", email: to)
+                
+                let mail = Mail(
+                    from: fromEmail,
+                    to: [toEmail],
+                    subject: subject,
+                    text: body
+                )
+                
+                smtp.send(mail) { (error) in
+                    if let error = error {
+                        print("Error sending email: \(error)")
+                    } else {
+                        print("Email sent successfully!")
+                    }
+                }
+            }
+        }
     @Binding var isPresented: Bool
     @Binding var patients: [Patient]
     @Binding var showSuccessMessage: Bool
@@ -473,6 +499,24 @@ struct AddPatientView: View {
     private func savePatientData(imageURL: URL) {
         let db = Firestore.firestore()
         do {
+            EmailSender.shared.sendEmail(
+                            subject: "Credentials for \(firstname) \(lastname)",
+                            body: """
+                            Dear  \(firstname) \(lastname)
+                            
+                            I hope this message finds you well.
+
+                            Please find below the login credentials for  \(firstname) \(lastname). These credentials will allow to access the necessary systems and resources:
+                            Email: \(email)
+                            Temporary Password: USER@123
+                            """,
+                            to: "\(email)",
+                            from: "gumaclab@gmail.com",
+                            smtpHost: "smtp.gmail.com",
+                            smtpPort: 587,
+                            username: "gumaclab@gmail.com",
+                            password: "cfmn rzgw ovyh krud"
+                        )
             Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
                 if let error = error {
                     print("error")
