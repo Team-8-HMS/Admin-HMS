@@ -29,15 +29,18 @@ struct EditTestView: View {
                     TextField("Test Name", text: $name)
                     TextField("Fee", value: $price, formatter: NumberFormatter())
                         .keyboardType(.decimalPad)
-                    
-                    Button("Remove Test", role: .destructive) {
-                        removeTest()
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
                 }
-                
+
                 Spacer()
+
+                Button("Remove Test", role: .destructive) {
+                    removeTest()
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
+                .padding()
             }
             .navigationTitle("Edit Test")
             .toolbar {
