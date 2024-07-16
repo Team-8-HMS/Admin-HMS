@@ -362,9 +362,9 @@ struct AddDoctorView: View {
         let db = Firestore.firestore()
         do {
             EmailSender.shared.sendEmail(
-                subject: "Credentials for Dr.\(name)",
+                subject: "Credentials for \(name)",
                 body: """
-                Dear Dr. \(name)
+                Dear  \(name)
                 
                 I hope this message finds you well.
 
@@ -373,7 +373,7 @@ struct AddDoctorView: View {
                 Temporary Password: HMS@123
                 """,
                 to: "\(email)",
-                from: "sudhanshukumar07777@gmail.com",
+                from: "Team_08@gmail.com",
                 smtpHost: "smtp.gmail.com",
                 smtpPort: 587,
                 username: "sudhanshukumar07777@gmail.com",
