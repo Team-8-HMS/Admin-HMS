@@ -110,28 +110,10 @@ struct PatientView: View {
                 }
                 .padding()
                 .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(8)
+                .cornerRadius(20)
                 
-                Button(action: {
-                    filterByContact.toggle()
-                }) {
-                    Image(systemName: filterByContact ? "phone.fill" : "line.horizontal.3.decrease.circle")
-                        .padding()
-                }
-                .popover(isPresented: $filterByContact) {
-                    VStack {
-                        TextField("Filter by Contact", text: $filterText)
-                            .padding()
-                            .background(Color(.systemGray4).opacity(0.5))
-                            .cornerRadius(8)
-                        Button("Apply") {
-                            filterByContact = false
-                        }
-                        .padding()
-                    }
-                    .padding()
-                }
-                
+               
+               
                 Spacer()
                 
                 Button(action: {
@@ -510,7 +492,7 @@ struct AddPatientView: View {
             .navigationBarTitleDisplayMode(.inline)
             .alert(isPresented: $showDiscardMessage) {
                 Alert(
-                    title: Text("Are you sure you want to discard this new contact?"),
+                    title: Text("Are you sure you want to discard this new Patient?"),
                     primaryButton: .destructive(Text("Discard Changes")) {
                         isPresented = false
                     },
@@ -1224,7 +1206,7 @@ struct PatientCardView: View {
             }
 
             Text("\(patient.firstname) \(patient.lastname)")
-                .font(.system(size: 24, weight: .semibold)) // Larger font size for name
+                .font(.system(size: 21, weight: .semibold)) // Larger font size for name
                 .foregroundColor(.primary)
             Text(patient.contactNumber)
                 .font(.system(size: 18, weight: .regular)) // Regular font size for contact number
