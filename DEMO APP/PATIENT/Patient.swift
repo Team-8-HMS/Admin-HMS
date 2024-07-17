@@ -77,33 +77,24 @@ struct PatientView: View {
     @State private var selectedPatient: Patient?
     @State private var showPatientDetail = false
     @State private var isEditing = false
-
+    
     var filteredPatients: [Patient] {
-        if searchText.isEmpty && filterText.isEmpty {
+        if searchText.isEmpty {
             return patients
-        } else if filterByContact {
-            return patients.filter { $0.contactNumber.contains(filterText) }
         } else {
-            return patients.filter { $0.firstname.contains(searchText) }
+            let lowercasedSearchText = searchText.lowercased()
+            return patients.filter {
+                $0.firstname.lowercased().contains(lowercasedSearchText) ||
+                $0.contactNumber.lowercased().contains(lowercasedSearchText) ||
+                $0.lastname.lowercased().contains(lowercasedSearchText)
+            }
         }
     }
-
+    
     var body: some View {
+        NavigationStack{
         VStack {
-            
-            
-            
             HStack {
-                Text("Patients")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                Spacer()
-            }
-            .padding(.top)
-            
-
-            HStack {
-                
                 HStack {
                     Image(systemName: "magnifyingglass")
                     TextField("Search", text: $searchText)
@@ -119,34 +110,12 @@ struct PatientView: View {
                 }
                 .padding()
                 .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(8)
-
-                Button(action: {
-                    filterByContact.toggle()
-                }) {
-                    Image(systemName: filterByContact ? "phone.fill" : "line.horizontal.3.decrease.circle")
-                        .padding()
-//                        .background(Color(.systemGray4).opacity(0.5))
-//                        .cornerRadius(8)
-                }
-                .popover(isPresented: $filterByContact) {
-                    VStack {
-                        TextField("Filter by Contact", text: $filterText)
-                            .padding()
-                            .background(Color(.systemGray4).opacity(0.5))
-                            .cornerRadius(8)
-                        Button("Apply") {
-                            filterByContact = false
-                        }
-                        .padding()
-                        
-                    }
-                    .padding()
-                    
-                }
-
+                .cornerRadius(20)
+                
+               
+               
                 Spacer()
-
+                
                 Button(action: {
                     showAddPatient.toggle()
                 }) {
@@ -155,7 +124,7 @@ struct PatientView: View {
                         Text("Add Patient")
                     }
                     .padding()
-                    .background(Color(hex: "#E1654A"))
+                    .background(Color(UIColor.systemBlue))
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
@@ -164,7 +133,7 @@ struct PatientView: View {
                 }
             }
             .padding(.horizontal)
-
+            
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
                     ForEach(filteredPatients) { patient in
@@ -178,6 +147,9 @@ struct PatientView: View {
                 }
                 .padding()
             }
+            .refreshable {
+                fetchPatients()
+            }
             Spacer()
         }
         .padding()
@@ -185,7 +157,7 @@ struct PatientView: View {
             Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
         }
         .onAppear(perform: fetchPatients)
-        .background(Color("LightColor").opacity(0.7))
+        .background(Color(UIColor.systemBackground).opacity(0.7))
         .fullScreenCover(item: $selectedPatient) { patient in
             PatientDetailView(
                 patient: patient,
@@ -216,7 +188,8 @@ struct PatientView: View {
                 }
             }
         }
-    }
+        }.navigationTitle("Patients")
+}
 
     private func fetchPatients() {
         let db = Firestore.firestore()
@@ -292,154 +265,253 @@ struct AddPatientView: View {
     @State private var contactNumber: String = ""
     @State private var email: String = ""
     @State private var address: String = ""
-    @State private var gender: String = "Male"
+    @State private var gender: String = "Select Gender"
     @State private var dob: Date = Date()
     @State private var emergencyContact: String = ""
     @State private var image: UIImage? = nil
     @State private var showingImagePicker = false
     @State private var showErrorMessage = false
+    @State private var showGenderPicker = false
+    @State private var showCancelAlert = false
+    @State private var showDiscardMessage = false
+    
+//    error variables
     @State private var firstnameError: String? = nil
     @State private var lastnameError: String? = nil
     @State private var contactNumberError: String? = nil
     @State private var emailError: String? = nil
+    
+//    emergencyContact
+    @State private var  emergencyContactError: String? = nil
 
-    let genders = ["Male", "Female", "Others"]
+    let genders = ["Select Gender", "Male", "Female", "Others"]
+
+    var isSaveButtonEnabled: Bool {
+        return !firstname.isEmpty && !lastname.isEmpty && !contactNumber.isEmpty && !email.isEmpty && !address.isEmpty && !gender.isEmpty && !emergencyContact.isEmpty
+    }
 
     var body: some View {
-        VStack {
-            Form {
-                Section(header: Text("Profile Picture")) {
-                    VStack {
-                        Button(action: {
-                            showingImagePicker.toggle()
-                        }) {
-                            if let image = image {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.gray, lineWidth: 2))
-                                    .shadow(radius: 2)
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.gray, lineWidth: 2))
-                                    .shadow(radius: 2)
+        NavigationView {
+            VStack {
+                HStack {
+                    Button("Cancel") {
+                        showDiscardMessage.toggle()
+                    }
+                    .foregroundColor(.blue)
+
+                    Spacer()
+
+                    Text("Add Patient")
+                        .font(.headline)
+
+                    Spacer()
+
+                    Button("Save") {
+                        if validateFields() {
+                            addPatient()
+                        }
+                    }
+                    .disabled(!isSaveButtonEnabled)
+                    .foregroundColor(isSaveButtonEnabled ? .blue : .gray)
+                }
+                .padding()
+//                .background(Color(.systemGray6))
+
+                Form {
+                    // Profile Picture Section
+                    Section(header: Text("Patient Profile Picture"))  {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showingImagePicker.toggle()
+                            }) {
+                                if let image = image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                        .shadow(radius: 2)
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                        .shadow(radius: 2)
+                                }
                             }
-                        }
-                        .sheet(isPresented: $showingImagePicker) {
-                            PatientImagePicker(image: $image)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                }
-                Section(header: Text("First Name")) {
-                    TextField("Enter First Name", text: $firstname)
-                        .onChange(of: firstname) { _ in
-                            validateFields()
-                        }
-                    if let firstnameError = firstnameError {
-                        Text(firstnameError).foregroundColor(.red)
-                    }
-                }
-                Section(header: Text("Last Name")) {
-                    TextField("Enter Last Name", text: $lastname)
-                        .onChange(of: lastname) { _ in
-                            validateFields()
-                        }
-                    if let lastnameError = lastnameError {
-                        Text(lastnameError).foregroundColor(.red)
-                    }
-                }
-                Section(header: Text("Contact No")) {
-                    TextField("Contact No", text: $contactNumber)
-                        .keyboardType(.numberPad)
-                        .onChange(of: contactNumber) { _ in
-                            validateFields()
-                        }
-                    if let contactNumberError = contactNumberError {
-                        Text(contactNumberError).foregroundColor(.red)
-                    }
-                }
-                Section(header: Text("E-mail")) {
-                    TextField("Enter Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .onChange(of: email) { _ in
-                            validateFields()
-                        }
-                        .overlay(HStack {
-                                                Spacer()
-                                                if email.isEmpty {
-                                                    Image(systemName: "")
-                                                        .padding()
-                                                } else if isValidEmail(email) {
-                                                    Image(systemName: "checkmark.circle.fill")
-                                                        .foregroundColor(.green)
-                                                        .padding()
-                                                } else {
-                                                    Image(systemName: "xmark.circle.fill")
-                                                        .foregroundColor(.red)
-                                                        .padding()
-                                                }
-                                            })
-                    if let emailError = emailError {
-                        Text(emailError).foregroundColor(.red)
-                    }
-                }
-                Section(header: Text("Address")) {
-                    TextField("Address", text: $address)
-                }
-                Section(header: Text("Gender")) {
-                    Picker("Select Gender", selection: $gender) {
-                        ForEach(genders, id: \.self) { gender in
-                            Text(gender)
+                            .sheet(isPresented: $showingImagePicker) {
+                                PatientImagePicker(image: $image)
+                            }
+                            Spacer()
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                }
-                Section(header: Text("DOB")) {
-                    DatePicker("Select Date", selection: $dob, displayedComponents: .date)
-                        .datePickerStyle(GraphicalDatePickerStyle())
-                }
-                Section(header: Text("Emergency Contact")) {
-                    TextField("Enter Emergency Contact", text: $emergencyContact)
-                        .keyboardType(.numberPad)
-                }
-            }
-            HStack {
-                Button("Back") {
-                    isPresented = false
-                }
-                .padding()
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                
-                Spacer()
-                
-                Button("Save") {
-                    if validateFields() {
-                        addPatient()
+
+                    // Name Section
+                    Section(header: Text("Name")) {
+                        TextField("First Name", text: $firstname)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            .onChange(of: firstname) { _ in
+                                validateEntryFields()
+                            }
+                        if let firstnameError = firstnameError {
+                            Text(firstnameError).foregroundColor(.red)
+                        }
+                        TextField("Last Name", text: $lastname)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            .onChange(of: lastname) { _ in
+                                validateEntryFields()
+                            }
+                        if let lastnameError = lastnameError {
+                            Text(lastnameError).foregroundColor(.red)
+                        }
+
+                    }
+
+                    // Contact Information Section
+                    Section(header: Text("Contact Details")) {
+                        TextField("Contact Number", text: $contactNumber)
+                            .keyboardType(.numberPad)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            .onChange(of: contactNumber) { _ in
+                                validateEntryFields()
+                            }
+                        if let contactNumberError = contactNumberError {
+                            Text(contactNumberError).foregroundColor(.red)
+                        }
+                        TextField("Email ID", text: $email)
+                            .keyboardType(.emailAddress)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            .onChange(of: email) { _ in
+                                validateEntryFields()
+                            }
+                            .overlay(HStack {
+                                                    Spacer()
+                                                    if email.isEmpty {
+                                                        Image(systemName: "")
+                                                            .padding()
+                                                    } else if isValidEmail(email) {
+                                                        Image(systemName: "checkmark.circle.fill")
+                                                            .foregroundColor(.green)
+                                                            .padding()
+                                                    } else {
+                                                        Image(systemName: "xmark.circle.fill")
+                                                            .foregroundColor(.red)
+                                                            .padding()
+                                                    }
+                                                })
+                        TextField("Emergency Contact", text: $emergencyContact)
+                            .keyboardType(.numberPad)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                            .onChange(of: emergencyContact) { _ in
+                                validateEntryFields()
+                            }
+                        if let emergencyContactError = emergencyContactError {
+                            Text(emergencyContactError).foregroundColor(.red)
+                        }
+                    }
+
+                    // Other Details Section
+                    Section(header: Text("Other Details")) {
+                        DatePicker("Date of Birth", selection: $dob, displayedComponents: .date)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                        
+                        // Gender Picker
+                        Menu {
+                            ForEach(genders, id: \.self) { gender in
+                                Button(action: {
+                                    self.gender = gender
+                                }) {
+                                    Text(gender)
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text("Gender")
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Text(gender)
+                                    .foregroundColor(.blue)
+                                Image(systemName: "chevron.down")
+                                    .foregroundColor(.gray)
+                            }
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
+                        }
+
+                        TextField("Address", text: $address)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(8)
+                            .frame(height: 30)
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
                     }
                 }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
                 .alert(isPresented: $showErrorMessage) {
                     Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
                 }
             }
-            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .alert(isPresented: $showDiscardMessage) {
+                Alert(
+                    title: Text("Are you sure you want to discard this new Patient?"),
+                    primaryButton: .destructive(Text("Discard Changes")) {
+                        isPresented = false
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
         }
     }
-    
+
     private func validateFields() -> Bool {
+        if firstname.isEmpty || lastname.isEmpty || contactNumber.isEmpty || email.isEmpty || address.isEmpty || gender.isEmpty || emergencyContact.isEmpty {
+            showErrorMessage = true
+            errorMessage = "All fields are mandatory."
+            return false
+        }
+        return true
+    }
+//    validateNameFields()
+    private func validateEntryFields() -> Bool {
         var valid = true
         
         if firstname == lastname {
@@ -458,6 +530,9 @@ struct AddPatientView: View {
             contactNumberError = nil
         }
         
+        
+        
+        
         if email.contains("@@") || email.contains("..") {
             emailError = "Email cannot contain consecutiv '@' or '.' characters."
             valid = false
@@ -465,17 +540,24 @@ struct AddPatientView: View {
             emailError = nil
         }
         
+        if emergencyContact.count != 10 {
+            emergencyContactError = "Emergency Contact number must be 10 digits."
+            valid = false
+        } else {
+            emergencyContactError = nil
+        }
+        
+        
         return valid
     }
-    
+
     private func addPatient() {
         guard let image = image else {
             errorMessage = "Please select an image."
             showErrorMessage = true
             return
         }
-        
-        // Upload image to Firebase Storage
+
         let storage = Storage.storage()
         let storageRef = storage.reference()
         let imagesRef = storageRef.child("images/\(UUID().uuidString).jpg")
@@ -495,53 +577,37 @@ struct AddPatientView: View {
             }
         }
     }
-    
+
     private func savePatientData(imageURL: URL) {
         let db = Firestore.firestore()
         do {
-            EmailSender.shared.sendEmail(
-                            subject: "Credentials for \(firstname) \(lastname)",
-                            body: """
-                            Dear  \(firstname) \(lastname)
-                            
-                            I hope this message finds you well.
-
-                            Please find below the login credentials for  \(firstname) \(lastname). These credentials will allow to access the necessary systems and resources:
-                            Email: \(email)
-                            Temporary Password: USER@123
-                            """,
-                            to: "\(email)",
-                            from: "gumaclab@gmail.com",
-                            smtpHost: "smtp.gmail.com",
-                            smtpPort: 587,
-                            username: "gumaclab@gmail.com",
-                            password: "cfmn rzgw ovyh krud"
-                        )
             Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
                 if let error = error {
-                    print("error")
+                    print("Error: \(error)")
                 } else {
                     if let authResult = authResult {
                         let userID = authResult.user.uid
-                        let newPatient = Patient(id: userID,
-                                                 firstname: firstname,
-                                                 lastname: lastname,
-                                                 contactNumber: contactNumber,
-                                                 email: email,
-                                                 address: address,
-                                                 gender: gender,
-                                                 dob: dob,
-                                                 imageURL: imageURL,
-                                                 emergencyContact: emergencyContact)
+                        let newPatient = Patient(
+                            id: userID,
+                            firstname: firstname,
+                            lastname: lastname,
+                            contactNumber: contactNumber,
+                            email: email,
+                            address: address,
+                            gender: gender,
+                            dob: dob,
+                            imageURL: imageURL,
+                            emergencyContact: emergencyContact
+                        )
                         let patientData = newPatient.toDictionary()
                         do {
                             try db.collection("Patient").document(userID).setData(patientData)
                             patients.append(newPatient)
                             successMessage = "Patient Added Successfully"
-                            showSuccessMessage = false
+                            showSuccessMessage = true
                             isPresented = false
                         } catch {
-                            print("Error setting Patient data: \(error.localizedDescription)")
+                            print("Error setting patient data: \(error.localizedDescription)")
                         }
                     }
                 }
@@ -575,33 +641,33 @@ struct PatientDetailView: View {
         VStack(spacing: 20) {
             HStack {
                 Button(action: {
-                                    isPresented = nil
-                                }) {
-                                    Image(systemName: "chevron.left")
-                                    Text("Back")
-                                }
-                                .padding()
-                                .foregroundColor(.white)
-                                .background(Color.gray)
-                                .cornerRadius(8)
-                                .padding(.horizontal)
+                    isPresented = nil
+                }) {
+                    Text("Back")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .cornerRadius(20)
+                }
+                .padding(.horizontal)
 
-                                Spacer()
+                Spacer()
 
-                                Button(action: {
-                                    editedPatient = patient
-                                    isEditing.toggle()
-                                }) {
-                                    Image(systemName: "pencil")
-                                    Text("Edit")
-                                }
-                                .padding()
-                                .foregroundColor(.white)
-                                .background(Color.blue)
-                                .cornerRadius(8)
-                                .padding(.horizontal)
-                            }
-                            .padding(.top, 20)
+                Button(action: {
+                    editedPatient = patient
+                    isEditing.toggle()
+                }) {
+                    Text("Edit")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .cornerRadius(20)
+                }
+                .padding(.horizontal)
+            }
+            .padding(.top, 20)
 
             if let imageURL = patient.imageURL, let url = URL(string: imageURL.absoluteString) {
                 AsyncImage(url: url) { phase in
@@ -615,7 +681,6 @@ struct PatientDetailView: View {
                             .frame(width: 150, height: 150)
                             .clipShape(Circle())
                             .padding(.top, 20)
-//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     case .failure:
                         Image(systemName: "person.circle.fill")
                             .resizable()
@@ -623,7 +688,6 @@ struct PatientDetailView: View {
                             .frame(width: 150, height: 150)
                             .clipShape(Circle())
                             .padding(.top, 20)
-//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     @unknown default:
                         EmptyView()
                     }
@@ -671,6 +735,7 @@ struct PatientDetailView: View {
                     Text(patient.emergencyContact)
                 }
             }
+            .listStyle(InsetGroupedListStyle())
 
             Spacer()
         }
@@ -694,7 +759,7 @@ struct PatientDetailView: View {
 // * MARK: - Edit Patient  View  *
 // MARK: - Edit Patient  View
 
-struct EditPatientView: View {
+struct EditPatientView: View  {
     @Binding var isPresented: Bool
     @Binding var patient: Patient?
     @Binding var patients: [Patient]
@@ -707,90 +772,229 @@ struct EditPatientView: View {
     @State private var contactNumber: String = ""
     @State private var email: String = ""
     @State private var address: String = ""
-    @State private var gender: String = "Male"
+    @State private var gender: String = "Select Gender"
     @State private var dob: Date = Date()
     @State private var emergencyContact: String = ""
     @State private var image: UIImage? = nil
     @State private var showingImagePicker = false
     @State private var showErrorMessage = false
     @State private var errorMessage = ""
-   
+    
+    
+    //    error variables
+        @State private var firstnameError: String? = nil
+        @State private var lastnameError: String? = nil
+        @State private var contactNumberError: String? = nil
+        @State private var emailError: String? = nil
+        
+    //    emergencyContact
+        @State private var  emergencyContactError: String? = nil
 
-    let genders = ["Male", "Female", "Others"]
+    let genders = ["Select Gender", "Male", "Female", "Others"]
+
+    var isSaveButtonEnabled: Bool {
+        return !firstname.isEmpty && !lastname.isEmpty && !contactNumber.isEmpty && !email.isEmpty && !address.isEmpty && !gender.isEmpty && !emergencyContact.isEmpty
+    }
 
     var body: some View {
-        VStack {
-            Form {
-                Section(header: Text("First Name")) {
-                    TextField("Enter First Name", text: $firstname)
-                }
-                Section(header: Text("Last Name")) {
-                    TextField("Enter Last Name", text: $lastname)
-                }
-                Section(header: Text("Contact No")) {
-                    TextField("Contact No", text: $contactNumber)
-                }
-                Section(header: Text("E-mail")) {
-                    TextField("Enter Email (Optional)", text: $email)
-                }
-               
-            
-                Section(header: Text("Address")) {
-                    TextField("Address", text: $address)
-                }
-                Section(header: Text("Gender")) {
-                    Picker("Select Gender", selection: $gender) {
-                        ForEach(genders, id: \.self) { gender in
-                            Text(gender)
+        NavigationView {
+            VStack {
+                HStack {
+                    Button("Back") {
+                        isPresented = false
+                    }
+                    .foregroundColor(.blue)
+
+                    Spacer()
+
+                    Text("Edit Patient")
+                        .font(.headline)
+
+                    Spacer()
+
+                    Button("Save") {
+                        if validateFields() {
+                            updatePatientData(patient: patient, imageURL: patient?.imageURL)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                }
-                Section(header: Text("DOB")) {
-                    DatePicker("Select Date", selection: $dob, displayedComponents: .date)
-                        .datePickerStyle(GraphicalDatePickerStyle())
-                }
-                Section(header: Text("Emergency Contact")) {
-                    TextField("Enter Emergency Contact", text: $emergencyContact)
-                }
-                Section {
-                    Button(action: {
-                        showingImagePicker.toggle()
-                    }) {
-                        Text("Choose Photo")
-                    }
-                    .sheet(isPresented: $showingImagePicker) {
-                        PatientImagePicker(image: $image)
-                    }
-                }
-            }
-            HStack {
-                Button("Back") {
-                    isPresented = false
+                    .disabled(!isSaveButtonEnabled)
+                    .foregroundColor(isSaveButtonEnabled ? .blue : .gray)
                 }
                 .padding()
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                
-                Spacer()
-                
-                Button("Save") {
-                    if firstname.isEmpty || lastname.isEmpty || contactNumber.isEmpty || email.isEmpty || address.isEmpty || gender.isEmpty {
-                        showErrorMessage = true
-                    } else {
-                        updatePatientData(patient: patient, imageURL: patient?.imageURL)
+
+                Form {
+                    // Profile Picture Section
+                    Section(header: Text("Patient Profile Picture"))  {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                showingImagePicker.toggle()
+                            }) {
+                                if let image = image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                        .shadow(radius: 2)
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                                        .shadow(radius: 2)
+                                }
+                            }
+                            .sheet(isPresented: $showingImagePicker) {
+                                PatientImagePicker(image: $image)
+                            }
+                            Spacer()
+                        }
+                    }
+
+                    // Name Section
+                    Section(header: Text("Name")) {
+                        HStack {
+                            Text("First Name")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("First Name", text: $firstname)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: firstname) { _ in
+                                    validateEntryFields()
+                                }
+                        }
+                        if let firstnameError = firstnameError {
+                            Text(firstnameError).foregroundColor(.red)
+                        }
+                        HStack {
+                            Text("Last Name")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("Last Name", text: $lastname)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: lastname) { _ in
+                                    validateEntryFields()
+                                }
+                        }
+                        if let lastnameError = lastnameError {
+                            Text(lastnameError).foregroundColor(.red)
+                        }
+                    }
+
+                    // Contact Information Section
+                    Section(header: Text("Contact Details")) {
+                        HStack {
+                            Text("Contact Number")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("Contact Number", text: $contactNumber)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: contactNumber) { _ in
+                                    validateEntryFields()
+                                }
+                           
+                        }
+                        if let contactNumberError = contactNumberError {
+                            Text(contactNumberError).foregroundColor(.red)
+                        }
+
+                        HStack {
+                            Text("Email ID")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("Email ID", text: $email)
+                                .keyboardType(.emailAddress)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: email) { _ in
+                                    validateEntryFields()
+                                }
+                        }
+                            
+//                            if isValidEmail(email) {
+                                if let emailError = emailError  {
+
+                                        Text(emailError)
+                                            .foregroundColor(.red)
+                                    }
+                                   
+                                    
+
+                                                HStack {
+                            Text("Emergency Contact")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("Emergency Contact", text: $emergencyContact)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: emergencyContact) { _ in
+                                    validateEntryFields()
+                                }
+                            
+                        }
+                        if let emergencyContactError = emergencyContactError {
+                            Text(emergencyContactError).foregroundColor(.red)
+                        }
+                    }
+
+                    // Other Details Section
+                    Section(header: Text("Other Details")) {
+                        HStack {
+                            Text("Date of Birth")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            DatePicker("", selection: $dob, displayedComponents: .date)
+                                .labelsHidden()
+                     
+                        } .frame(height: 30)
+                        
+                        // Gender Picker
+                        HStack {
+                            Text("Gender")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            Menu {
+                                ForEach(genders, id: \.self) { gender in
+                                    Button(action: {
+                                        self.gender = gender
+                                    }) {
+                                        Text(gender)
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(gender)
+                                        .foregroundColor(.blue)
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color.white)
+                                .frame(height: 30)
+                                .cornerRadius(8)
+                               
+                            }
+                        }
+
+                        HStack {
+                            Text("Address")
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            Spacer()
+                            TextField("Address", text: $address)
+                                .multilineTextAlignment(.trailing)
+                               
+                        }
                     }
                 }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
                 .alert(isPresented: $showErrorMessage) {
-                    Alert(title: Text("Error"), message: Text("All fields are mandatory."), dismissButton: .default(Text("OK")))
+                    Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
                 }
             }
-            .padding()
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 if let patient = patient {
                     firstname = patient.firstname
@@ -808,7 +1012,59 @@ struct EditPatientView: View {
             }
         }
     }
-    
+
+    private func validateFields() -> Bool {
+        if firstname.isEmpty || lastname.isEmpty || contactNumber.isEmpty || email.isEmpty || address.isEmpty || gender.isEmpty || emergencyContact.isEmpty {
+            showErrorMessage = true
+            errorMessage = "All fields are mandatory."
+            return false
+        }
+        return true
+    }
+    private func validateEntryFields() -> Bool {
+        var valid = true
+        
+        if firstname == lastname {
+            firstnameError = "First name and last name cannot be the same."
+            lastnameError = "First name and last name cannot be the same."
+            valid = false
+        } else {
+            firstnameError = nil
+            lastnameError = nil
+        }
+        
+        if contactNumber.count != 10 {
+            contactNumberError = "Contact number must be 10 digits."
+            valid = false
+        } else {
+            contactNumberError = nil
+        }
+        
+        
+        
+        
+        if email.contains("@@") || email.contains("..") {
+            emailError = "Please Enter a Valid Email ID"
+            valid = false
+        } else if isValidEmail(email) == false {
+            emailError = "Please Enter a Valid Email ID"
+            valid = false
+        }
+        else {
+            emailError = nil
+        }
+        
+        if emergencyContact.count != 10 {
+            emergencyContactError = "Emergency Contact number must be 10 digits."
+            valid = false
+        } else {
+            emergencyContactError = nil
+        }
+        
+        
+        return valid
+    }
+
     private func updatePatientData(patient: Patient?, imageURL: URL?) {
         guard let patient = patient else { return }
         
@@ -903,20 +1159,20 @@ struct PatientImagePicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
 }
 
-//-------------------------------------------------------
-// * MARK: -  Patient Card View  *
-// MARK: -  Patient Card View
+
+
 
 //-------------------------------------------------------
 // * MARK: -  Patient Card View  *
 // MARK: -  Patient Card View
+
+
 
 struct PatientCardView: View {
     var patient: Patient
 
     var body: some View {
         VStack(spacing: 17) {
-            
             if let imageURL = patient.imageURL, let url = URL(string: imageURL.absoluteString) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -928,14 +1184,14 @@ struct PatientCardView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 100, height: 100)
                             .clipShape(Circle())
-//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     case .failure:
                         Image(systemName: "person.circle.fill")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 100, height: 100)
                             .clipShape(Circle())
-//                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
                     @unknown default:
                         EmptyView()
                     }
@@ -950,11 +1206,11 @@ struct PatientCardView: View {
             }
 
             Text("\(patient.firstname) \(patient.lastname)")
-                .font(.headline)
+                .font(.system(size: 21, weight: .semibold)) // Larger font size for name
                 .foregroundColor(.primary)
             Text(patient.contactNumber)
-                .font(.subheadline)
-                .foregroundColor(.black)
+                .font(.system(size: 18, weight: .regular)) // Regular font size for contact number
+                .foregroundColor(.secondary)
         }
         .frame(width: 200, height: 200) // Fixed width and height
         .padding()
