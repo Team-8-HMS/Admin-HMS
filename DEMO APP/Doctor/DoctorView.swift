@@ -25,9 +25,14 @@ struct DoctorView: View {
         if searchText.isEmpty {
             return doctors
         } else {
-            return doctors.filter { $0.name.contains(searchText) }
+            let lowercasedSearchText = searchText.lowercased()
+            return doctors.filter {
+                $0.name.lowercased().contains(lowercasedSearchText) ||
+                $0.department.lowercased().contains(lowercasedSearchText)
+            }
         }
     }
+
     
     var body: some View {
         NavigationStack{

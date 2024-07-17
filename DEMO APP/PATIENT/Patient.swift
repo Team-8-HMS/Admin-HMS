@@ -79,12 +79,15 @@ struct PatientView: View {
     @State private var isEditing = false
     
     var filteredPatients: [Patient] {
-        if searchText.isEmpty && filterText.isEmpty {
+        if searchText.isEmpty {
             return patients
-        } else if filterByContact {
-            return patients.filter { $0.contactNumber.contains(filterText) }
         } else {
-            return patients.filter { $0.firstname.contains(searchText) }
+            let lowercasedSearchText = searchText.lowercased()
+            return patients.filter {
+                $0.firstname.lowercased().contains(lowercasedSearchText) ||
+                $0.contactNumber.lowercased().contains(lowercasedSearchText) ||
+                $0.lastname.lowercased().contains(lowercasedSearchText)
+            }
         }
     }
     
