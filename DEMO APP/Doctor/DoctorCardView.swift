@@ -12,40 +12,46 @@ struct DoctorCardView: View {
     var doctor: Doctor
     
     var body: some View {
-        VStack(spacing: 17)  {
-            AsyncImage(url: doctor.imageURL) { image in
-                image
+        VStack(spacing: 17) {
+            if let imageURL = doctor.imageURL, let url = URL(string: imageURL.absoluteString) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    case .failure:
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            } else {
+                Image(systemName: "person.circle.fill")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
                     .clipShape(Circle())
-//                    .overlay(Circle().stroke(Color.black, lineWidth: 1))
-            } placeholder: {
-                ProgressView()
+                    .overlay(Circle().stroke(Color.black, lineWidth: 2))
             }
+            
             Text(doctor.name)
-                .font(.headline)
+                .font(.system(size: 24, weight: .semibold)) // Larger font size for name
                 .foregroundColor(.primary)
-                .fontWeight(.bold)
-  
             
             Text(doctor.department)
-                .font(.subheadline)
-                .foregroundColor(.black)
-            
-//            Text("ID: \(doctor.idNumber)")
-//                .font(.subheadline)
-//                .foregroundColor(.black)
-//                .padding(.bottom)
-            
-//            Text("Entry: \(DateFormatter.timeFormatter.string(from: doctor.entryTime))")
-//                .font(.subheadline)
-//                .foregroundColor(.black)
-//
-//            Text("Exit: \(DateFormatter.timeFormatter.string(from: doctor.exitTime))")
-//                .font(.subheadline)
-//                .foregroundColor(.black)
-//                .padding(.bottom)
+                .font(.system(size: 18, weight: .regular)) // Regular font size for department
+                .foregroundColor(.secondary)
         }
         .frame(width: 200, height: 200) // Fixed width and height
         .padding()

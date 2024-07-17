@@ -33,104 +33,93 @@ struct DoctorView: View {
         }
     }
 
-    
     var body: some View {
-        NavigationStack{
-        VStack {
-            //            HStack {
-            //                Text("Doctors")
-            //                    .font(.largeTitle)
-            //                    .fontWeight(.bold)
-            //                Spacer()
-            //            }
-            //            .padding(.top)
-            HStack {
+        NavigationStack {
+            VStack {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(Color(UIColor.opaqueSeparator))
-                        }
-                    }
-                }
-                .padding()
-                .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(8)
-                
-                Spacer()
-                
-                Button(action: {
-                    showAddDoctor.toggle()
-                }) {
                     HStack {
-                        Image(systemName: "plus")
-                        Text("Add Doctor")
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(UIColor.opaqueSeparator))
+                            }
+                        }
                     }
                     .padding()
-                    .background(Color(hex: "#E1654A"))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .background(Color(.systemGray4).opacity(0.5))
+                    .cornerRadius(20)
                 }
-                .sheet(isPresented: $showAddDoctor) {
-                    AddDoctorView(isPresented: $showAddDoctor, doctors: $doctors, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
-                }
-            }
-            .padding(.horizontal)
-            
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
-                    ForEach(filteredDoctors) { doctor in
-                        Button(action: {
-                            selectedDoctor = doctor
-                            showDoctorDetail = true
-                        }) {
-                            DoctorCardView(doctor: doctor)
+                .padding(.horizontal)
+                
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
+                        ForEach(filteredDoctors) { doctor in
+                            Button(action: {
+                                selectedDoctor = doctor
+                                showDoctorDetail = true
+                            }) {
+                                DoctorCardView(doctor: doctor)
+                            }
                         }
                     }
+                    .padding()
                 }
-                .padding()
+                Spacer()
             }
-            Spacer()
-        }
-        .padding()
-        .alert(isPresented: $showSuccessMessage) {
-            Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
-        }
-        .onAppear(perform: fetchDoctors)
-        .background(Color("LightColor").opacity(0.7))
-        .fullScreenCover(item: $selectedDoctor) { doctor in
-            DoctorDetailView(
-                doctor: doctor,
-                onBack: {
-                    selectedDoctor = nil
-                },
-                onRemove: {
-                    if let index = doctors.firstIndex(of: doctor) {
-                        removeDoctorFromFirestore(doctor: doctor)
-                        doctors.remove(at: index)
+            .padding()
+            .alert(isPresented: $showSuccessMessage) {
+                Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
+            }
+            .onAppear(perform: fetchDoctors)
+            .background(Color("LightColor").opacity(0.7))
+            .fullScreenCover(item: $selectedDoctor) { doctor in
+                DoctorDetailView(
+                    doctor: doctor,
+                    onBack: {
                         selectedDoctor = nil
+                    },
+                    onRemove: {
+                        if let index = doctors.firstIndex(of: doctor) {
+                            removeDoctorFromFirestore(doctor: doctor)
+                            doctors.remove(at: index)
+                            selectedDoctor = nil
+                        }
+                    },
+                    onEdit: {
+                        selectedDoctor = doctor
+                        isEditing = true
                     }
-                },
-                onEdit: {
-                    selectedDoctor = doctor
-                    isEditing = true
+                )
+                .navigationBarHidden(true)
+                .sheet(isPresented: $isEditing) {
+                    EditDoctorView(isPresented: $isEditing, doctor: $selectedDoctor, doctors: $doctors, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
+                        .onDisappear {
+                            selectedDoctor = nil
+                        }
                 }
-            )
-            .navigationBarHidden(true)
-            .sheet(isPresented: $isEditing) {
-                EditDoctorView(isPresented: $isEditing, doctor: $selectedDoctor, doctors: $doctors, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
-                    .onDisappear {
-                        selectedDoctor = nil
+            }
+            .navigationTitle("Doctors")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showAddDoctor.toggle()
+                    }) {
+                        HStack {
+                            Image(systemName: "plus")
+//                            Text("Add Doctor")
+                        }
                     }
+                    .sheet(isPresented: $showAddDoctor) {
+                        AddDoctorView(isPresented: $showAddDoctor, doctors: $doctors, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
+                    }
+                }
             }
         }
-        }.navigationTitle("Doctors")
-        
     }
     
     private func fetchDoctors() {
