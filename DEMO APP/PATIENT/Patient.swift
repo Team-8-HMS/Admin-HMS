@@ -92,104 +92,99 @@ struct PatientView: View {
     }
     
     var body: some View {
-        NavigationStack{
-        VStack {
-            HStack {
+        NavigationStack {
+            VStack {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(Color(UIColor.opaqueSeparator))
-                        }
-                    }
-                }
-                .padding()
-                .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(20)
-                
-               
-               
-                Spacer()
-                
-                Button(action: {
-                    showAddPatient.toggle()
-                }) {
                     HStack {
-                        Image(systemName: "plus")
-                        Text("Add Patient")
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(UIColor.opaqueSeparator))
+                            }
+                        }
                     }
                     .padding()
-                    .background(Color(UIColor.systemBlue))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .background(Color(.systemGray4).opacity(0.5))
+                    .cornerRadius(20)
+                    
+                    Spacer()
                 }
-                .sheet(isPresented: $showAddPatient) {
-                    AddPatientView(isPresented: $showAddPatient, patients: $patients, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
-                }
-            }
-            .padding(.horizontal)
-            
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
-                    ForEach(filteredPatients) { patient in
-                        Button(action: {
-                            selectedPatient = patient
-                            showPatientDetail = true
-                        }) {
-                            PatientCardView(patient: patient)
+                .padding(.horizontal)
+                
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 197), spacing: 40)]) {
+                        ForEach(filteredPatients) { patient in
+                            Button(action: {
+                                selectedPatient = patient
+                                showPatientDetail = true
+                            }) {
+                                PatientCardView(patient: patient)
+                            }
                         }
                     }
+                    .padding()
                 }
-                .padding()
+                .refreshable {
+                    fetchPatients()
+                }
+                Spacer()
             }
-            .refreshable {
-                fetchPatients()
+            .padding()
+            .alert(isPresented: $showSuccessMessage) {
+                Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
             }
-            Spacer()
-        }
-        .padding()
-        .alert(isPresented: $showSuccessMessage) {
-            Alert(title: Text("Success"), message: Text(successMessage), dismissButton: .default(Text("OK")))
-        }
-        .onAppear(perform: fetchPatients)
-        .background(Color(UIColor.systemBackground).opacity(0.7))
-        .fullScreenCover(item: $selectedPatient) { patient in
-            PatientDetailView(
-                patient: patient,
-                onBack: {
-                    selectedPatient = nil
-                },
-                onEdit: {
-                    selectedPatient = patient
-                    isEditing = true
-                },
-                isPresented: $selectedPatient,
-                patients: $patients,
-                showSuccessMessage: $showSuccessMessage,
-                successMessage: $successMessage
-            )
-            .navigationBarHidden(true)
-            .sheet(isPresented: $isEditing) {
-                EditPatientView(
-                    isPresented: $isEditing,
-                    patient: $selectedPatient,
+            .onAppear(perform: fetchPatients)
+            .background(Color(UIColor.systemBackground).opacity(0.7))
+            .fullScreenCover(item: $selectedPatient) { patient in
+                PatientDetailView(
+                    patient: patient,
+                    onBack: {
+                        selectedPatient = nil
+                    },
+                    onEdit: {
+                        selectedPatient = patient
+                        isEditing = true
+                    },
+                    isPresented: $selectedPatient,
                     patients: $patients,
                     showSuccessMessage: $showSuccessMessage,
-                    successMessage: $successMessage,
-                    parentPresentation: $selectedPatient
+                    successMessage: $successMessage
                 )
-                .onDisappear {
-                    selectedPatient = nil
+                .navigationBarHidden(true)
+                .sheet(isPresented: $isEditing) {
+                    EditPatientView(
+                        isPresented: $isEditing,
+                        patient: $selectedPatient,
+                        patients: $patients,
+                        showSuccessMessage: $showSuccessMessage,
+                        successMessage: $successMessage,
+                        parentPresentation: $selectedPatient
+                    )
+                    .onDisappear {
+                        selectedPatient = nil
+                    }
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showAddPatient.toggle()
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                    .sheet(isPresented: $showAddPatient) {
+                        AddPatientView(isPresented: $showAddPatient, patients: $patients, showSuccessMessage: $showSuccessMessage, successMessage: $successMessage)
+                    }
+                }
+            }
+            .navigationTitle("Patients")
         }
-        }.navigationTitle("Patients")
-}
+    }
 
     private func fetchPatients() {
         let db = Firestore.firestore()
@@ -207,24 +202,14 @@ struct PatientView: View {
     }
 }
 
-//-------------------------------------------------------
-// * MARK: -  Add Patient View  *
-// MARK: - Add Patient View
 
 //-------------------------------------------------------
 // * MARK: -  Add Patient View  *
 // MARK: - Add Patient View
 
-
-//func isValidEmail(_ email: String) -> Bool {
-//    let allowedDomains = [
-//        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
-//        "aol.com", "mail.com", "zoho.com", "protonmail.com", "gmx.com"
-//    ]
-//    let emailRegEx = "^[A-Z0-9a-z._%+-]+@(" + allowedDomains.joined(separator: "|") + ")$"
-//    let emailPred = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
-//    return emailPred.evaluate(with: email)
-//}
+//-------------------------------------------------------
+// * MARK: -  Add Patient View  *
+// MARK: - Add Patient View
 
 
 struct AddPatientView: View {
@@ -341,6 +326,7 @@ struct AddPatientView: View {
                                         .clipShape(Circle())
                                         .overlay(Circle().stroke(Color.gray, lineWidth: 2))
                                         .shadow(radius: 2)
+                                        
                                 }
                             }
                             .sheet(isPresented: $showingImagePicker) {
@@ -358,7 +344,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                             .onChange(of: firstname) { _ in
                                 validateEntryFields()
                             }
@@ -371,7 +356,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                             .onChange(of: lastname) { _ in
                                 validateEntryFields()
                             }
@@ -390,7 +374,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                             .onChange(of: contactNumber) { _ in
                                 validateEntryFields()
                             }
@@ -404,7 +387,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                             .onChange(of: email) { _ in
                                 validateEntryFields()
                             }
@@ -430,7 +412,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                             .onChange(of: emergencyContact) { _ in
                                 validateEntryFields()
                             }
@@ -447,7 +428,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                         
                         // Gender Picker
                         Menu {
@@ -473,7 +453,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                         }
 
                         TextField("Address", text: $address)
@@ -482,7 +461,6 @@ struct AddPatientView: View {
                             .cornerRadius(8)
                             .frame(height: 30)
                             .padding(.horizontal)
-                            .padding(.bottom, 10)
                     }
                 }
                 .alert(isPresented: $showErrorMessage) {
@@ -581,6 +559,24 @@ struct AddPatientView: View {
     private func savePatientData(imageURL: URL) {
         let db = Firestore.firestore()
         do {
+            EmailSender.shared.sendEmail(
+                subject: "Credentials for \(firstname) \(lastname)",
+                body: """
+                Dear \(firstname) \(lastname)
+                
+                I hope this message finds you well.
+
+                Please find below the login credentials for  \(firstname) \(lastname). These credentials will allow to access the necessary systems and resources:
+                Email: \(email)
+                Temporary Password: HMS@123
+                """,
+                to: "\(email)",
+                from: "gumaclab@gmail.com",
+                smtpHost: "smtp.gmail.com",
+                smtpPort: 587,
+                username: "gumaclab@gmail.com",
+                password: "cfmn rzgw ovyh krud"
+                )
             Auth.auth().createUser(withEmail: email, password: "HMS@123") { authResult, error in
                 if let error = error {
                     print("Error: \(error)")
@@ -707,32 +703,53 @@ struct PatientDetailView: View {
                 .fontWeight(.bold)
 
             Form {
-                Section(header: Text("ID")) {
-                    Text(patient.id)
+                Section(header: Text("Name")) {
+                    HStack {
+                        Text("First Name")
+                        Spacer()
+                        Text(patient.firstname)
+                    }
+                    HStack {
+                        Text("Last Name")
+                        Spacer()
+                        Text(patient.lastname)
+                    }
                 }
-                Section(header: Text("First Name")) {
-                    Text(patient.firstname)
+                
+                Section(header: Text("Contact Details")) {
+                    HStack {
+                        Text("Phone")
+                        Spacer()
+                        Text(patient.contactNumber)
+                    }
+                    HStack {
+                        Text("Email")
+                        Spacer()
+                        Text(patient.email)
+                    }
+                    HStack {
+                        Text("Emergency Contact")
+                        Spacer()
+                        Text(patient.emergencyContact)
+                    }
                 }
-                Section(header: Text("Last Name")) {
-                    Text(patient.lastname)
-                }
-                Section(header: Text("Address")) {
-                    Text(patient.address)
-                }
-                Section(header: Text("Email")) {
-                    Text(patient.email)
-                }
-                Section(header: Text("Phone")) {
-                    Text(patient.contactNumber)
-                }
-                Section(header: Text("Gender")) {
-                    Text(patient.gender)
-                }
-                Section(header: Text("Date of Birth")) {
-                    Text("\(patient.dob, formatter: DateFormatter.shortDate)")
-                }
-                Section(header: Text("Emergency Contact")) {
-                    Text(patient.emergencyContact)
+
+                Section(header: Text("Other Details")) {
+                    HStack {
+                        Text("Date of Birth")
+                        Spacer()
+                        Text("\(patient.dob, formatter: DateFormatter.shortDate)")
+                    }
+                    HStack {
+                        Text("Gender")
+                        Spacer()
+                        Text(patient.gender)
+                    }
+                    HStack {
+                        Text("Address")
+                        Spacer()
+                        Text(patient.address)
+                    }
                 }
             }
             .listStyle(InsetGroupedListStyle())

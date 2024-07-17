@@ -7,7 +7,7 @@ struct YourApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginMain()
+            ContentView()
         }
     }
 }
