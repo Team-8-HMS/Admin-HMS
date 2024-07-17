@@ -40,13 +40,10 @@ struct PricingView: View {
                 .padding()
                 .background(Color(.systemGray4).opacity(0.5))
                 .cornerRadius(8)
-                .padding(.horizontal)
+                .padding(.horizontal,10)
                 
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        Text("Serial Number")
-                            .fontWeight(.bold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                         Text("Test Name")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,8 +51,8 @@ struct PricingView: View {
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal,50)
+                    .padding(.vertical, 15)
                     
                     Divider()
                     
@@ -65,8 +62,6 @@ struct PricingView: View {
                                 selectedTest = test
                             }) {
                                 HStack {
-                                    Text("\(index + 1)")
-                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     Text(test.name)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Text("\(test.price, specifier: "%.2f")")
@@ -80,12 +75,17 @@ struct PricingView: View {
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    .listStyle(PlainListStyle())
+                    .listStyle(InsetListStyle())
                     .background(Color(.systemGray6))
                     .cornerRadius(15)
+                    .frame(height: CGFloat(medicalTests.count)*67
+                    )
+                    Spacer()
                     .refreshable {
                         fetchData()
-                    }
+                            
+                    }.padding(.horizontal, 50)
+                        .padding(.vertical, 0)
                 }
                 .background(Color(.systemGray5).opacity(0.7))
                 .cornerRadius(10)
@@ -111,6 +111,7 @@ struct PricingView: View {
         }
         .onAppear {
             fetchData()
+            
         }
     }
 
@@ -138,4 +139,7 @@ struct PricingView: View {
             }
         }
     }
+}
+#Preview {
+    PricingView()
 }

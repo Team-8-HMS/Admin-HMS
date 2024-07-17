@@ -15,6 +15,12 @@ extension DateFormatter {
         formatter.dateStyle = .short
         return formatter
     }()
+    
+    static let shortTime: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            return formatter
+        }()
     static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
