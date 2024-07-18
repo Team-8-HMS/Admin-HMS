@@ -11,13 +11,35 @@ import FirebaseFirestore
 import FirebaseStorage
 import SwiftUI
 
+
+struct PatientModel: Identifiable {
+    var id :String
+    var name: String
+    var dob : Date
+    var profileImage: String
+    var status : String
+}
+
+//DoctorModel
+struct DoctorModel: Identifiable{
+    var id: String
+    var idNumber: Int
+    var name: String
+    var contactNo: String
+    var email: String
+    var department: String
+//    var imageURL: URL?
+//    var workingDays: [String]
+//    var yearsOfExperience: Int
+    
+}
+
+
 let db = Firestore.firestore()
 struct FirebaseAppointment : Identifiable{
     let id:String
     let doctorId:String
     let patientId:String
-    let doctorName : String
-    let patientName : String
     let date:Date
     let timeSlot:String
     let isPremium:Bool
@@ -25,15 +47,10 @@ struct FirebaseAppointment : Identifiable{
 }
 var app:[FirebaseAppointment] = []
 
-
 func dateConverter(dateString : String) -> Date?{
     
     let dateFormatter = DateFormatter()
-
-    // Set the date format according to the input string
     dateFormatter.dateFormat = "dd MMMM yyyy"
-
-    // Set the locale if needed, e.g., for English
     dateFormatter.locale = Locale(identifier: "en_US")
 
     if let date = dateFormatter.date(from: dateString) {
@@ -45,117 +62,27 @@ func dateConverter(dateString : String) -> Date?{
     }
 }
 
-extension Date {
-    func formattedMonthAndYear() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: self)
-    }
-
-    func formattedDay() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "E"
-        return formatter.string(from: self)
-    }
-
-    func formattedDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter.string(from: self)
-    }
-
-    func isSameDay(as date: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.isDate(self, inSameDayAs: date)
-    }
-
-    var startOfWeek: Date? {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)
-        return calendar.date(from: components)
-    }
-}
-
-
-
-
-
-func fetchAppointments(){
-    db.collection("Appointements").addSnapshotListener{ querySnapshot ,error in
-        app = []
-
-        guard let documents = querySnapshot?.documents else{
-            print("No data found")
-            return
-        }
-        for document in documents{
-            do{
-                
-                let data = document.data()
-            
-               
-                    
-                    var doctorName = "name_of_doctotr_009444"
-                    var patientName = "name_of_patient"
-                    let id = data["id"] as? String ?? ""
-                    let doctorId = data["doctorId"] as? String ?? ""
-                    db.collection("Doctors").whereField("id", isEqualTo: doctorId).getDocuments { (snapshot, error) in
-                    if let error = error {
-                        print("\n\n error is  \(error)")
-                    } else {
-                        for document in snapshot?.documents ?? [] {
-                            doctorName = data["name"] as? String ?? ""
-                            print(doctorName)
-                            }
-                    }
-                        
-                    }
-                    let patientId = data["patientId"] as? String ?? ""
-                    let date = data["date"] as? String ?? ""
-                    let realDate = dateConverter(dateString: date)
-                    let timeSlot = data["timeSlot"] as? String ?? ""
-                    let isPremium = data["isPremium"] as? Bool ?? false
-                    let appointment:FirebaseAppointment = FirebaseAppointment(id: id, doctorId: doctorId, patientId: patientId,doctorName: doctorName, patientName: patientName, date: realDate ?? Date.now, timeSlot: timeSlot, isPremium: isPremium)
-                    app.append(appointment)
-                    print(appointment)
-                
-                
-            }
-            print(app)
-        }
-        
-    }
-}
-
-// Appointment view  ------------------------------------------main screen---------------
 struct AppointmentView: View {
+    @StateObject var appModel = AppViewModel()
     @State private var selectedDate = Date()
 
     var body: some View {
-        NavigationStack{
         VStack {
-            CalendarView(selectedDate: $selectedDate).padding(.top,80).frame(maxWidth: .infinity, alignment: .leading).font(.largeTitle)
-                .fontWeight(.bold)
+            CalendarView(selectedDate: $selectedDate)
+                .padding(.bottom, 20)
             
-            
-            //            print(app)
             List {
-                
-                ForEach(app.filter { $0.date.isSameDay(as: selectedDate) }) { appointment in
+                ForEach(appModel.app.filter { $0.date.isSameDay(as: selectedDate) }) { appointment in
                     AppointmentRow(appointment: appointment)
-                    //                    print(app)
-                    
                 }
             }
             .padding(.horizontal) // Add horizontal padding to the List
             .padding(.bottom, 10) // Add bottom padding to the List
         }
         .padding(.horizontal, -10)
-        }.navigationTitle("Appointments")
-        
-
+        .accentColor(Color(UIColor(red: 225 / 255, green: 101 / 255, blue: 74 / 255, alpha: 0.8)))
+        .navigationBarTitle("Schedule", displayMode: .inline)
     }
-   
 }
 
 // CalendarView
@@ -181,7 +108,7 @@ struct CalendarView: View {
             Text(currentMonth)
                 .font(.system(size: 40))
                 .fontWeight(.bold)
-                .padding(.top, -40)
+                .padding(.top, 0)
             
             HStack {
                 Button(action: {
@@ -200,24 +127,21 @@ struct CalendarView: View {
                 ForEach(days, id: \.self) { day in
                     VStack {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .foregroundColor(selectedDate.isSameDay(as: day) ? Color(UIColor(red: 228 / 255, green: 101 / 255, blue: 74 / 255, alpha: 1)) : Color.gray)
-                                .frame(width: 120, height: 100)
+                            Circle()
+                                .foregroundColor(selectedDate.isSameDay(as: day) ? Color(UIColor(red: 228 / 255, green: 101 / 255, blue: 74 / 255, alpha: 1)) : Color.gray.opacity(0.6))
+                                .frame(width: 80, height: 80)
                             
                             VStack {
                                 Text(day.formattedDay())
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 12))
                                     .foregroundColor(.white)
-                                    .padding(.top, 10)
                                 
                                 Text(day.formattedDate())
-                                    .font(.system(size: 30))
+                                    .font(.system(size: 18))
                                     .fontWeight(.bold)
                                     .foregroundColor(.white)
-                                    .padding(.bottom, 10)
                             }
                         }
-                        .cornerRadius(15)
                         .onTapGesture {
                             selectedDate = day
                         }
@@ -244,32 +168,43 @@ struct CalendarView: View {
 
 // AppointmentRow
 struct AppointmentRow: View {
+    @StateObject var appModel = AppViewModel()
     var appointment: FirebaseAppointment
 
     var body: some View {
-        HStack {
-            Image("appointment.patient.profileImage")
-                .resizable()
-                .frame(width: 80, height: 80)
-                .clipShape(Circle())
-                .padding(.trailing, 10)
-            
-            VStack(alignment: .leading) {
-                Text(appointment.patientId)
-                    .font(.headline)
-                Text(appointment.doctorName)
-                    .font(.headline)
-                Text("\(appointment.date)")
-                    .font(.subheadline)
-            }.background(Color(.systemGray6))
-            Spacer()
-            Text(appointment.timeSlot)
-                .font(.subheadline)
-            Spacer()
-//            Image(systemName: "chevron.right")
+        NavigationStack{
+           
+                HStack {
+                    AsyncImage(url: URL(string: appModel.patientData[appointment.patientId]?.profileImage ?? "")) { image in
+                        image
+                            .resizable()
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .padding(.trailing, 10)
+                    } placeholder: {
+                        Circle()
+                            .frame(width: 80, height: 80)
+                            .padding(.trailing, 10)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text(appModel.patientData[appointment.patientId]?.name ?? "No name found")
+                            .font(.headline)
+                        Text(appModel.doctorData[appointment.doctorId]?.name ?? "No name found")
+                            .font(.headline)
+                        Text(appModel.doctorData[appointment.doctorId]?.department ?? "No name department")
+                            .font(.subheadline)
+
+                        Text(appointment.date.formattedDate())
+                            .font(.subheadline)
+                    }
+                    Spacer()
+                    Text(appointment.timeSlot)
+                        .font(.subheadline)
+                }
+                .padding()
+           
         }
-        .padding()
-        .background(Color(.systemGray6))
     }
 
     private func statusColor(for status: String) -> Color {
@@ -277,7 +212,7 @@ struct AppointmentRow: View {
         case "Pending":
             return Color(red: 218/255, green: 59/255, blue: 19/255)
         case "Done":
-            return Color(red: 101/255, green:200/255, blue: 102/255)
+            return Color(red: 101/255, green: 200/255, blue: 102/255)
         case "Progress":
             return Color(red: 50/255, green: 0/255, blue: 255/255)
         default:
@@ -295,6 +230,94 @@ struct AppointmentRow: View {
             return Color(red: 230/255, green: 230/255, blue: 247/255)
         default:
             return Color.gray.opacity(0.2)
+        }
+    }
+}
+
+
+
+
+
+// MARK: - APP Model
+class AppViewModel: ObservableObject {
+    @AppStorage("doctorId") var doctorId : String = ""
+    @Published var app:[FirebaseAppointment] = []
+    @Published var todayApp: [FirebaseAppointment] = []
+    @Published var pendingApp: [FirebaseAppointment] = []
+    @Published var patientData:[String:PatientModel] = [:]
+    @Published var doctorData:[String:DoctorModel] = [:]
+    
+    init() {
+        db.collection("Appointements").addSnapshotListener{ querySnapshot ,error in
+            guard let documents = querySnapshot?.documents else{
+                print("No data found")
+                return
+            }
+            self.app = []
+            self.todayApp = []
+            self.pendingApp = []
+            self.patientData = [:]
+            for document in documents{
+                do{
+                    
+                    let data = document.data()
+                        let id = data["id"] as? String ?? ""
+                        let doctorId = data["doctorId"] as? String ?? ""
+                        let patientId = data["patientId"] as? String ?? ""
+                        let date = data["date"] as? String ?? ""
+                        let realDate = dateConverter(dateString: date)!
+                        let timeSlot = data["timeSlot"] as? String ?? ""
+                        let isPremium = data["isPremium"] as? Bool ?? false
+                        let appointment:FirebaseAppointment = FirebaseAppointment(id: id, doctorId: doctorId, patientId: patientId, date: realDate, timeSlot: timeSlot, isPremium: isPremium)
+                        if realDate.isSameDay(as: Date()) {
+                            self.todayApp.append(appointment)
+                        } else {
+                            self.pendingApp.append(appointment)
+                        }
+                        print("patientid --> \(patientId)")
+                        db.document("Patient/\(patientId)").getDocument{documentSnapshot , error in
+                            if let error = error{
+                                print("error")
+                            }
+                            else if let documentSnapshot , documentSnapshot.exists{
+                                if let data = documentSnapshot.data(){
+                                    let firstname = data["firstname"] as? String ?? ""
+                                    let lastname = data["lastname"] as? String ?? ""
+                                    let name = "\(firstname) \(lastname)"
+                                    let image = data["imageURL"] as? String ?? ""
+                                    let dob = data["dob"] as? String ?? ""
+                                    let dateDOB = dateConverter(dateString: dob)
+                                    self.patientData[patientId] = PatientModel(id: patientId, name: name, dob: dateDOB ?? Date.now, profileImage: image, status: "Pending")
+                                    print(self.patientData)
+                                    print("HIHiHiHi")
+                                    
+                                }
+                            }
+                        }
+                    db.document("Doctors/\(doctorId)").getDocument{documentSnapshot , error in
+                        if let error = error{
+                            print("error")
+                        }
+                        else if let documentSnapshot , documentSnapshot.exists{
+                            if let data = documentSnapshot.data(){
+                                let medicalId = data["idNumber"] as? Int ?? 000
+                                let name = data["name"] as? String ?? ""
+                                
+                                let contactNo = data["contactNo"] as? String ?? ""
+                                let department = data["department"] as? String ?? ""
+                                let email = data["email"] as? String ?? ""
+                                self.doctorData[doctorId] = DoctorModel(id: doctorId, idNumber: medicalId, name: name, contactNo: contactNo, email: email, department: department)
+                                print(self.doctorData)
+                                print("HIHiHiHi")
+                                
+                            }
+                        }
+                    }
+                        self.app.append(appointment)
+                   
+                    
+                }
+            }
         }
     }
 }

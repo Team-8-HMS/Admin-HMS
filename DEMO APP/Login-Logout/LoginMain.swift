@@ -181,7 +181,7 @@ struct LoginMain: View {
                 alertMessage = "Email or password is incorrect. Please try again."
                 showAlert = true
             } else {
-                fetchAppointments()
+//                fetchAppointments()
                 loginButtonTapped = true
             }
         }

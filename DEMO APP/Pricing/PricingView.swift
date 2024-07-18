@@ -8,6 +8,8 @@
 
 import SwiftUI
 import FirebaseFirestore
+import SwiftUI
+import FirebaseFirestore
 
 struct MedicalTest: Identifiable, Hashable {
     var id = UUID()
@@ -27,22 +29,31 @@ struct PricingView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                
-                
+            VStack {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                        .padding(.leading, 8)
+                    Text("Test Fee")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Spacer()
                 }
-                .padding()
-                .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(8)
-                .padding(.horizontal,10)
-                
+                .padding(.top)
+                .padding(.leading)
+
+                HStack {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                    }
+                    .padding()
+                    .background(Color(.systemGray4).opacity(0.5))
+                    .cornerRadius(8)
+                }
+                .padding(.leading)
+                .padding(.horizontal)
+
                 VStack(alignment: .leading, spacing: 0) {
+                    // Heading row
                     HStack {
                         Text("Test Name")
                             .fontWeight(.bold)
@@ -50,49 +61,42 @@ struct PricingView: View {
                         Text("Fees")
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                        Spacer()
                     }
-                    .padding(.horizontal,50)
-                    .padding(.vertical, 15)
-                    
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+
                     Divider()
-                    
+
+                    // Test rows
                     List {
                         ForEach(Array(filteredTests.enumerated()), id: \.element.id) { index, test in
                             Button(action: {
                                 selectedTest = test
                             }) {
                                 HStack {
+                                   
                                     Text(test.name)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Text("\(test.price, specifier: "%.2f")")
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Spacer()
                                     Image(systemName: "chevron.right")
-                                        .foregroundColor(.gray)
                                 }
                                 .padding(.vertical, 8)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    .listStyle(InsetListStyle())
+                    .listStyle(PlainListStyle())
                     .background(Color(.systemGray6))
                     .cornerRadius(15)
-                    .frame(height: CGFloat(medicalTests.count)*67
-                    )
-                    Spacer()
-                    .refreshable {
-                        fetchData()
-                            
-                    }.padding(.horizontal, 50)
-                        .padding(.vertical, 0)
                 }
-                .background(Color(.systemGray5).opacity(0.7))
+                .background(Color("LightColor").opacity(0.7))
                 .cornerRadius(10)
                 .padding()
             }
-            .background(Color(.systemGray5).opacity(0.7))
-            .navigationTitle("Lab Tests")
+            .background(Color("LightColor").opacity(0.7))
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -111,7 +115,6 @@ struct PricingView: View {
         }
         .onAppear {
             fetchData()
-            
         }
     }
 
@@ -140,6 +143,11 @@ struct PricingView: View {
         }
     }
 }
+
+extension Color {
+   static let CustomRed = Color(red: 225/255, green: 101/255, blue: 70/255)
+}
+
 #Preview {
     PricingView()
 }

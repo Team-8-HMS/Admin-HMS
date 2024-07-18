@@ -86,3 +86,37 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
+
+
+// Extension for the Appointments
+
+extension Date {
+    func formattedMonthAndYear() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: self)
+    }
+
+    func formattedDay() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E"
+        return formatter.string(from: self)
+    }
+
+    func formattedDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter.string(from: self)
+    }
+
+    func isSameDay(as date: Date) -> Bool {
+        let calendar = Calendar.current
+        return calendar.isDate(self, inSameDayAs: date)
+    }
+
+    var startOfWeek: Date? {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)
+        return calendar.date(from: components)
+    }
+}

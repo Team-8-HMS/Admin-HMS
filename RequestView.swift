@@ -32,7 +32,7 @@ struct RequestView: View {
     @State private var requests: [Request] = []
     @State private var showingAlert = false
     @State private var alertMessage = ""
-    
+
     var filteredRequests: [Request] {
         let list = selectedSegment == 0 ? requests.filter { $0.status == .pending } : requests.filter { $0.status != .pending }
         if searchText.isEmpty {
@@ -41,70 +41,77 @@ struct RequestView: View {
             return list.filter { $0.name.lowercased().contains(searchText.lowercased()) || $0.department.lowercased().contains(searchText.lowercased()) }
         }
     }
-    
+
     var body: some View {
-        NavigationStack{
-        VStack {
-            HStack {
-                
+        NavigationStack {
+            VStack {
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                    TextField("Search", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(Color(UIColor.opaqueSeparator))
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                        TextField("Search", text: $searchText)
+                            .textFieldStyle(PlainTextFieldStyle())
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color(UIColor.opaqueSeparator))
+                            }
                         }
                     }
+                    .padding()
+                    .background(Color(.systemGray4).opacity(0.5))
+                    .cornerRadius(8)
                 }
+                .padding(.horizontal)
+
+                Picker("Requests", selection: $selectedSegment) {
+                    Text("Pending").tag(0)
+                    Text("Status").tag(1)
+                }
+                .pickerStyle(SegmentedPickerStyle())
                 .padding()
-                .background(Color(.systemGray4).opacity(0.5))
-                .cornerRadius(8)
-            }
-            
-            Picker("Requests", selection: $selectedSegment) {
-                Text("Pending").tag(0)
-                Text("Status").tag(1)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
-            
-            if selectedSegment == 0 {
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
-                        ForEach(filteredRequests) { request in
-                            RequestBoxView(request: request, approveAction: {
-                                updateRequestStatus(request, status: .approved)
-                            }, disapproveAction: {
-                                updateRequestStatus(request, status: .rejected)
-                            })
+
+                if selectedSegment == 0 {
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
+                            ForEach(filteredRequests) { request in
+                                RequestBoxView(request: request, approveAction: {
+                                    updateRequestStatus(request, status: .approved)
+                                }, disapproveAction: {
+                                    updateRequestStatus(request, status: .rejected)
+                                })
+                            }
                         }
+                        .padding()
                     }
-                    .padding()
-                }
-            } else {
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
-                        ForEach(filteredRequests) { request in
-                            ApprovedDoctorView(doctor: request)
+                    .refreshable {
+                        fetchRequests()
+                    }
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 20) {
+                            ForEach(filteredRequests) { request in
+                                ApprovedDoctorView(doctor: request)
+                            }
                         }
+                        .padding()
                     }
-                    .padding()
+                    .refreshable {
+                        fetchRequests()
+                    }
                 }
             }
+            .background(Color("LightColor").opacity(0.3).edgesIgnoringSafeArea(.all))
+            .onAppear {
+                fetchRequests()
+            }
+            .alert(isPresented: $showingAlert) {
+                Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+            .navigationTitle("Leave Requests")
         }
-        .background(Color("LightColor").opacity(0.3).edgesIgnoringSafeArea(.all))
-        .onAppear {
-            fetchRequests()
-        }
-        .alert(isPresented: $showingAlert) {
-            Alert(title: Text("Status"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-        }
-        }.navigationTitle("Requests")
-}
+    }
 
     private func updateRequestStatus(_ request: Request, status: Request.Status) {
         FirestoreService.shared.updateRequestStatus(requestId: request.firestoreId, status: status.rawValue) { error in
@@ -135,7 +142,7 @@ struct RequestView: View {
 class FirestoreService {
     static let shared = FirestoreService()
     private let db = Firestore.firestore()
-    
+
     func fetchRequests(completion: @escaping ([Request]?, Error?) -> Void) {
         db.collection("requests").getDocuments { snapshot, error in
             if let error = error {
@@ -161,7 +168,7 @@ class FirestoreService {
             }
         }
     }
-    
+
     func updateRequestStatus(requestId: String, status: String, completion: @escaping (Error?) -> Void) {
         db.collection("requests").document(requestId).updateData(["status": status]) { error in
             completion(error)
@@ -184,39 +191,46 @@ struct RequestBoxView: View {
                 Spacer()
             }
             .padding(.bottom, 10)
-            
+
             Text(request.name)
                 .fontWeight(.bold)
-//            Text("ID: \(request.idNumber)")
-//                .fontWeight(.bold)
             Text("Department: \(request.department)")
                 .fontWeight(.bold)
-            
+
             Text("Reason: \(request.reason)")
             Text("From: \(request.fromDate.formatted()) - \(request.toDate.formatted())")
-            
+
             HStack {
                 Spacer()
                 Button(action: approveAction) {
                     Text("Approve")
-                        .foregroundColor(.white)
-                        .frame(width: 100, height: 40)
-                        .background(Color.green)
+                        .foregroundColor(.green)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
                         .cornerRadius(10)
+                        .shadow(radius: 2)
                 }
+                .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal)
+
                 Button(action: disapproveAction) {
                     Text("Reject")
-                        .foregroundColor(.white)
-                        .frame(width: 100, height: 40)
-                        .background(Color.red)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
                         .cornerRadius(10)
+                        .shadow(radius: 2)
                 }
+                .buttonStyle(BorderlessButtonStyle())
+                .padding(.horizontal)
                 Spacer()
             }
             .padding(.top, 10)
         }
         .padding()
-        .background(Color.white)
+        .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(15)
         .shadow(radius: 5)
     }
@@ -246,19 +260,17 @@ struct ApprovedDoctorView: View {
                 }
             }
             .padding(.bottom, 10)
-            
+
             Text(doctor.name)
                 .fontWeight(.bold)
-//            Text("ID: \(doctor.idNumber)")
-//                .fontWeight(.bold)
             Text("Department: \(doctor.department)")
                 .fontWeight(.bold)
-            
+
             Text("Reason: \(doctor.reason)")
             Text("From: \(doctor.fromDate.formatted()) - \(doctor.toDate.formatted())")
         }
         .padding()
-        .background(Color.white)
+        .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(15)
         .shadow(radius: 5)
     }
@@ -303,8 +315,9 @@ extension Date {
     }
 }
 
-struct RequestView_Previews: PreviewProvider {
+struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         RequestView()
+            .previewDevice("iPad Pro (12.9-inch) (5th generation)")
     }
 }
