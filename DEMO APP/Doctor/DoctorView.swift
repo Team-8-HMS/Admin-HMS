@@ -52,7 +52,7 @@ struct DoctorView: View {
                     }
                     .padding()
                     .background(Color(.systemGray4).opacity(0.5))
-                    .cornerRadius(10)
+                    .cornerRadius(20)
                 }
                 .padding(.horizontal)
                 
@@ -68,6 +68,9 @@ struct DoctorView: View {
                         }
                     }
                     .padding()
+                }
+                .refreshable {
+                    fetchDoctors()
                 }
                 Spacer()
             }

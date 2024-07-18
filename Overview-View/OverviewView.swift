@@ -11,6 +11,8 @@ import Charts
 import FirebaseFirestore
 
 struct OverviewView: View {
+    
+    @StateObject var appModel = AppViewModel()
     @State private var selectedSegment = "Yearly"
     private let segments = ["Weekly", "Monthly", "Yearly"]
     @State private var doctorCount: Int = 0 // State variable to store doctor count
@@ -35,7 +37,7 @@ struct OverviewView: View {
                 
                 VStack(spacing: 16) {
                     HStack(spacing: 16) {
-                        OverviewBox(title: "Today's Appointment", value: "0", image: "person.3").frame(width: 310)
+                        OverviewBox(title: "Today's Appointment", value: "\(getAppointment())", image: "person.3").frame(width: 310)
                         OverviewBox(title: "Doctors", value: "\(doctorCount)", image: "stethoscope").frame(width: 310)
                         OverviewBox(title: "Patients", value: "\(PatientCount)", image: "person").frame(width: 310)
                     }
@@ -44,8 +46,8 @@ struct OverviewView: View {
                     
                     HStack(spacing: 16) {
                         OverviewBox(title: "Leave Requests", value: "\(pendingRequestsCount)", image: "person.fill.checkmark").frame(width: 310)
-                        OverviewBox(title: "Departments", value: "10", image: "building.columns").frame(width: 310)
-                        OverviewBox(title: "Today's Revenue", value: "0", image: "creditcard").frame(width: 310)
+                        OverviewBox(title: "Departments", value: "6", image: "building.columns").frame(width: 310)
+                        OverviewBox(title: "Today's Revenue", value: "\(todayRevenueApp)", image: "creditcard").frame(width: 310)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
@@ -120,8 +122,13 @@ struct OverviewView: View {
         .background(Color("LightColor").opacity(0.7))
         .edgesIgnoringSafeArea(.all)
     }
-
-    func getData(for segment: String) -> [Double] {
+    
+    func getAppointment() -> Int{
+        ForEach(appModel.todayApp) { appointment in
+                AppointmentRow(appointment: appointment)}
+        return appModel.todayApp.count
+    }
+        func getData(for segment: String) -> [Double] {
         switch segment {
         case "Weekly":
             return [20, 45, 75, 50, 65, 45, 80]
@@ -135,6 +142,7 @@ struct OverviewView: View {
     }
 
     func getLabels(for segment: String) -> [String] {
+        
         switch segment {
         case "Weekly":
             return ["1", "2", "3", "4", "5", "6", "7"]

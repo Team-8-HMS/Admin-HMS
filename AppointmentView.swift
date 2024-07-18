@@ -10,13 +10,21 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 import SwiftUI
+//var currentDateString: Date {
+//        let formatter = DateFormatter()
+//        formatter.dateStyle = .long
+//        formatter.timeStyle = .none
+//    return formatter.date()
+//    }
 
 
 struct PatientModel: Identifiable {
     var id :String
     var name: String
+    var contactnumber : String
     var dob : Date
     var profileImage: String
+   
     var status : String
 }
 
@@ -28,7 +36,8 @@ struct DoctorModel: Identifiable{
     var contactNo: String
     var email: String
     var department: String
-//    var imageURL: URL?
+    var imageURL: String
+    var visitingFees : Int
 //    var workingDays: [String]
 //    var yearsOfExperience: Int
     
@@ -62,6 +71,9 @@ func dateConverter(dateString : String) -> Date?{
     }
 }
 
+
+// MARK: - Appointmentn View
+
 struct AppointmentView: View {
     @StateObject var appModel = AppViewModel()
     @State private var selectedDate = Date()
@@ -70,6 +82,27 @@ struct AppointmentView: View {
         VStack {
             CalendarView(selectedDate: $selectedDate)
                 .padding(.bottom, 20)
+            
+            Divider()
+            
+            HStack {
+                Spacer()
+                Text("Patient Details")
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Doctor Details")
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Time Slot")
+                    .fontWeight(.bold)
+                Spacer()
+                    
+               
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+
+            Divider()
             
             List {
                 ForEach(appModel.app.filter { $0.date.isSameDay(as: selectedDate) }) { appointment in
@@ -81,7 +114,7 @@ struct AppointmentView: View {
         }
         .padding(.horizontal, -10)
         .accentColor(Color(UIColor(red: 225 / 255, green: 101 / 255, blue: 74 / 255, alpha: 0.8)))
-        .navigationBarTitle("Schedule", displayMode: .inline)
+        .navigationTitle("Appointment")
     }
 }
 
@@ -173,7 +206,8 @@ struct AppointmentRow: View {
 
     var body: some View {
         NavigationStack{
-           
+            HStack {
+                // Patient
                 HStack {
                     AsyncImage(url: URL(string: appModel.patientData[appointment.patientId]?.profileImage ?? "")) { image in
                         image
@@ -186,27 +220,56 @@ struct AppointmentRow: View {
                             .frame(width: 80, height: 80)
                             .padding(.trailing, 10)
                     }
-                    
+
                     VStack(alignment: .leading) {
                         Text(appModel.patientData[appointment.patientId]?.name ?? "No name found")
                             .font(.headline)
+                        Text(appModel.patientData[appointment.patientId]?.contactnumber ?? "No contact found")
+                            .font(.headline)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Divider between patient and doctor
+                Divider()
+                    .frame(height: 80) // Adjust the height to match the content
+                    .padding(.horizontal, 10)
+                
+                // Doctor
+                HStack {
+                    AsyncImage(url: URL(string: appModel.doctorData[appointment.doctorId]?.imageURL ?? "")) { image in
+                        image
+                            .resizable()
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .padding(.trailing, 10)
+                    } placeholder: {
+                        Circle()
+                            .frame(width: 80, height: 80)
+                            .padding(.trailing, 10)
+                    }
+
+                    VStack(alignment: .leading) {
                         Text(appModel.doctorData[appointment.doctorId]?.name ?? "No name found")
                             .font(.headline)
-                        Text(appModel.doctorData[appointment.doctorId]?.department ?? "No name department")
-                            .font(.subheadline)
-
-                        Text(appointment.date.formattedDate())
+                        Text(appModel.doctorData[appointment.doctorId]?.department ?? "No department found")
+                            .font(.headline)
+                        Text("\(appModel.doctorData[appointment.doctorId]?.visitingFees ?? 0) Rs")
                             .font(.subheadline)
                     }
-                    Spacer()
-                    Text(appointment.timeSlot)
-                        .font(.subheadline)
                 }
-                .padding()
-           
+                .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer()
+                
+                // Time Slot
+                Text(appointment.timeSlot)
+                    .font(.subheadline)
+            }
+            .padding()
         }
     }
-
+    
     private func statusColor(for status: String) -> Color {
         switch status {
         case "Pending":
@@ -237,12 +300,13 @@ struct AppointmentRow: View {
 
 
 
-
+ var todayRevenueApp = 0
 // MARK: - APP Model
 class AppViewModel: ObservableObject {
     @AppStorage("doctorId") var doctorId : String = ""
     @Published var app:[FirebaseAppointment] = []
     @Published var todayApp: [FirebaseAppointment] = []
+  
     @Published var pendingApp: [FirebaseAppointment] = []
     @Published var patientData:[String:PatientModel] = [:]
     @Published var doctorData:[String:DoctorModel] = [:]
@@ -271,6 +335,7 @@ class AppViewModel: ObservableObject {
                         let appointment:FirebaseAppointment = FirebaseAppointment(id: id, doctorId: doctorId, patientId: patientId, date: realDate, timeSlot: timeSlot, isPremium: isPremium)
                         if realDate.isSameDay(as: Date()) {
                             self.todayApp.append(appointment)
+//                            todayRevenueApp = todayRevenueApp + doctorData.visitingFees
                         } else {
                             self.pendingApp.append(appointment)
                         }
@@ -284,10 +349,11 @@ class AppViewModel: ObservableObject {
                                     let firstname = data["firstname"] as? String ?? ""
                                     let lastname = data["lastname"] as? String ?? ""
                                     let name = "\(firstname) \(lastname)"
+                                    let contactNumber = data["contactNumber"] as? String ?? ""
                                     let image = data["imageURL"] as? String ?? ""
                                     let dob = data["dob"] as? String ?? ""
                                     let dateDOB = dateConverter(dateString: dob)
-                                    self.patientData[patientId] = PatientModel(id: patientId, name: name, dob: dateDOB ?? Date.now, profileImage: image, status: "Pending")
+                                    self.patientData[patientId] = PatientModel(id: patientId, name: name,  contactnumber: contactNumber, dob: dateDOB ?? Date.now, profileImage: image,status: "Pending")
                                     print(self.patientData)
                                     print("HIHiHiHi")
                                     
@@ -306,7 +372,9 @@ class AppViewModel: ObservableObject {
                                 let contactNo = data["contactNo"] as? String ?? ""
                                 let department = data["department"] as? String ?? ""
                                 let email = data["email"] as? String ?? ""
-                                self.doctorData[doctorId] = DoctorModel(id: doctorId, idNumber: medicalId, name: name, contactNo: contactNo, email: email, department: department)
+                                let image = data["imageURL"] as? String ?? ""
+                                let visitingFees = data["visitingFees"] as? Int ?? 0
+                                self.doctorData[doctorId] = DoctorModel(id: doctorId, idNumber: medicalId, name: name, contactNo: contactNo, email: email, department: department, imageURL: image,visitingFees: visitingFees)
                                 print(self.doctorData)
                                 print("HIHiHiHi")
                                 
