@@ -37,7 +37,7 @@ struct DoctorModel: Identifiable{
     var email: String
     var department: String
     var imageURL: String
-    var visitingFees : Int
+    var visitingFeeOfDoctor : Int
 //    var workingDays: [String]
 //    var yearsOfExperience: Int
     
@@ -203,6 +203,7 @@ struct CalendarView: View {
 struct AppointmentRow: View {
     @StateObject var appModel = AppViewModel()
     var appointment: FirebaseAppointment
+    var revenueDone = 0
 
     var body: some View {
         NavigationStack{
@@ -254,8 +255,10 @@ struct AppointmentRow: View {
                             .font(.headline)
                         Text(appModel.doctorData[appointment.doctorId]?.department ?? "No department found")
                             .font(.headline)
-                        Text("\(appModel.doctorData[appointment.doctorId]?.visitingFees ?? 0) Rs")
+                        Text("\(appModel.doctorData[appointment.doctorId]?.visitingFeeOfDoctor ?? 0) Rs")
                             .font(.subheadline)
+//                        revenueDone = revenueDone + appModel.doctorData[appointment.doctorId]?.visitingFeeOfDoctor ?? 0
+                       
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -269,6 +272,7 @@ struct AppointmentRow: View {
             .padding()
         }
     }
+    
     
     private func statusColor(for status: String) -> Color {
         switch status {
@@ -300,7 +304,7 @@ struct AppointmentRow: View {
 
 
 
- var todayRevenueApp = 0
+
 // MARK: - APP Model
 class AppViewModel: ObservableObject {
     @AppStorage("doctorId") var doctorId : String = ""
@@ -333,12 +337,7 @@ class AppViewModel: ObservableObject {
                         let timeSlot = data["timeSlot"] as? String ?? ""
                         let isPremium = data["isPremium"] as? Bool ?? false
                         let appointment:FirebaseAppointment = FirebaseAppointment(id: id, doctorId: doctorId, patientId: patientId, date: realDate, timeSlot: timeSlot, isPremium: isPremium)
-                        if realDate.isSameDay(as: Date()) {
-                            self.todayApp.append(appointment)
-//                            todayRevenueApp = todayRevenueApp + doctorData.visitingFees
-                        } else {
-                            self.pendingApp.append(appointment)
-                        }
+                       
                         print("patientid --> \(patientId)")
                         db.document("Patient/\(patientId)").getDocument{documentSnapshot , error in
                             if let error = error{
@@ -373,13 +372,19 @@ class AppViewModel: ObservableObject {
                                 let department = data["department"] as? String ?? ""
                                 let email = data["email"] as? String ?? ""
                                 let image = data["imageURL"] as? String ?? ""
-                                let visitingFees = data["visitingFees"] as? Int ?? 0
-                                self.doctorData[doctorId] = DoctorModel(id: doctorId, idNumber: medicalId, name: name, contactNo: contactNo, email: email, department: department, imageURL: image,visitingFees: visitingFees)
+                                let fees = data["visitingFees"] as? Int ?? 0
+                                self.doctorData[doctorId] = DoctorModel(id: doctorId, idNumber: medicalId, name: name, contactNo: contactNo, email: email, department: department, imageURL: image, visitingFeeOfDoctor: fees)
                                 print(self.doctorData)
                                 print("HIHiHiHi")
                                 
                             }
                         }
+                    }
+                    if realDate.isSameDay(as: Date()) {
+                        self.todayApp.append(appointment)
+//                        todayRevenueApp = todayRevenueApp + doctorData.visitingFeeOfDoctor
+                    } else {
+                        self.pendingApp.append(appointment)
                     }
                         self.app.append(appointment)
                    

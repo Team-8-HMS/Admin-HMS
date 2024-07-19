@@ -192,7 +192,7 @@ struct AddDoctorView: View {
                                 validateFields()
                             }
                         if let contactNumberError = contactNumberError {
-                            Text(contactNumberError).foregroundColor(.red)
+                            Text(contactNumberError).foregroundColor(.black)
                         }
                        
                         
@@ -364,7 +364,7 @@ struct AddDoctorView: View {
                             
                         if let fee = Int(visitingFees), fee <= 0 || fee > 10000 {
                             Text("Fees should be between 1 and 10,000")
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                                 .padding(.horizontal)
                         }
                         
@@ -382,7 +382,7 @@ struct AddDoctorView: View {
                             
                         if let experience = Int(yearsOfExperience), experience >= doctorAge() - 25 || experience < 0 {
                             Text("Experience should be less than age minus 25")
-                                .foregroundColor(.red)
+                                .foregroundColor(.black)
                                 .padding(.horizontal)
                         }
                         

@@ -47,7 +47,7 @@ struct OverviewView: View {
                     HStack(spacing: 16) {
                         OverviewBox(title: "Leave Requests", value: "\(pendingRequestsCount)", image: "person.fill.checkmark").frame(width: 310)
                         OverviewBox(title: "Departments", value: "6", image: "building.columns").frame(width: 310)
-                        OverviewBox(title: "Today's Revenue", value: "\(todayRevenueApp)", image: "creditcard").frame(width: 310)
+                        OverviewBox(title: "Today's Revenue", value: "\(TodayRevenueApp())", image: "creditcard").frame(width: 310)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
@@ -128,6 +128,18 @@ struct OverviewView: View {
                 AppointmentRow(appointment: appointment)}
         return appModel.todayApp.count
     }
+    
+    
+    func TodayRevenueApp() -> Int{
+        var todayRevenueApp = 0
+        ForEach(appModel.todayApp) { appointment in
+            AppointmentRow(appointment: appointment)
+//            todayRevenueApp = todayRevenueApp + appModel.doctorData[appointment.doctorId]?.visitingFeeOfDoctor ?? 0
+        }
+        return todayRevenueApp
+        
+    }
+    
         func getData(for segment: String) -> [Double] {
         switch segment {
         case "Weekly":

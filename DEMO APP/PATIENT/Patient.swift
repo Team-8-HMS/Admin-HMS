@@ -348,7 +348,7 @@ struct AddPatientView: View {
                                 validateEntryFields()
                             }
                         if let firstnameError = firstnameError {
-                            Text(firstnameError).foregroundColor(.red)
+                            Text(firstnameError).foregroundColor(.black)
                         }
                         TextField("Last Name", text: $lastname)
                             .padding()
@@ -360,7 +360,7 @@ struct AddPatientView: View {
                                 validateEntryFields()
                             }
                         if let lastnameError = lastnameError {
-                            Text(lastnameError).foregroundColor(.red)
+                            Text(lastnameError).foregroundColor(.black)
                         }
 
                     }
@@ -378,7 +378,7 @@ struct AddPatientView: View {
                                 validateEntryFields()
                             }
                         if let contactNumberError = contactNumberError {
-                            Text(contactNumberError).foregroundColor(.red)
+                            Text(contactNumberError).foregroundColor(.black)
                         }
                         TextField("Email ID", text: $email)
                             .keyboardType(.emailAddress)
@@ -416,7 +416,7 @@ struct AddPatientView: View {
                                 validateEntryFields()
                             }
                         if let emergencyContactError = emergencyContactError {
-                            Text(emergencyContactError).foregroundColor(.red)
+                            Text(emergencyContactError).foregroundColor(.black)
                         }
                     }
 
