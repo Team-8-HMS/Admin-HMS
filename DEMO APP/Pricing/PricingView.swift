@@ -30,14 +30,7 @@ struct PricingView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                HStack {
-                    Text("Test Fee")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Spacer()
-                }
-                .padding(.top)
-                .padding(.leading)
+                
 
                 HStack {
                     HStack {
@@ -94,7 +87,7 @@ struct PricingView: View {
                 .background(Color("LightColor").opacity(0.7))
                 .cornerRadius(10)
                 .padding()
-            }
+            }.navigationTitle("Lab-Test")
             .background(Color("LightColor").opacity(0.7))
             
             .toolbar {
@@ -102,7 +95,7 @@ struct PricingView: View {
                     Button(action: {
                         showAddTestView = true
                     }) {
-                        Text("Add Test")
+                        Text("Add")
                     }
                 }
             }

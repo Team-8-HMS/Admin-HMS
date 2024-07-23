@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var selectedItem: String? = "Overview"
     @State private var showLogoutConfirmation = false
     @State private var isLoggedOut = false
-    let items = ["Overview", "Patient", "Appointment" ,"Doctor List","Lab-Test","Request","Logout"]
+    let items = ["Overview", "Patients", "Appointment" ,"Doctors","Lab-Test","Request","Logout"]
     let icons = ["doc.richtext", "person", "calendar", "stethoscope","creditcard","person.fill.checkmark","person.icloud.fill" ]
     
     var body: some View {
@@ -85,9 +85,9 @@ struct ContentView: View {
         switch menuItem {
         case "Overview": // Case 1 call
             OverviewView()
-        case "Patient" : // Case 2
+        case "Patients" : // Case 2
             PatientView()
-        case "Doctor List":
+        case "Doctors":
             DoctorView()
         
         case "Lab-Test":

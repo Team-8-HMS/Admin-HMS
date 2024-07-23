@@ -61,7 +61,7 @@ struct LoginMain: View {
                     if !isValidEmail(email) && !email.isEmpty {
                         Text("Please enter a valid email address.")
                             .font(.footnote)
-                            .foregroundColor(.red)
+                            .foregroundColor(.black)
                     }
                     
                     // Password TextField with visibility toggle
@@ -114,7 +114,7 @@ struct LoginMain: View {
                     
                     if let passwordError = passwordError {
                         Text(passwordError)
-                            .foregroundColor(.red)
+                            .foregroundColor(.black)
                             .font(.caption)
                             .padding([.leading, .top], 4)
                     }
